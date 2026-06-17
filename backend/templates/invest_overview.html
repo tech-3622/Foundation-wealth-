@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+{% block title %}Markets — Foundation Wealth{% endblock %}
+{% block content %}
+<div class="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+            <div class="stat-icon bg-blue-500/15 icon-glow">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-white">Markets</h1>
+                <p class="text-gray-500 text-sm">{{ total_symbols }} instruments across 8 asset classes</p>
+            </div>
+        </div>
+        <div class="relative w-full sm:w-72">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="marketSearch" type="text" placeholder="Search asset types..." class="w-full pl-9 pr-3 py-2 bg-[#111118] border border-gray-800 rounded-lg text-white text-sm focus:border-blue-500 outline-none">
+        </div>
+    </div>
+
+    <div class="decorative-line mb-6"></div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div class="p-4 bg-[#111118] border border-gray-800 rounded-xl premium-card">
+            <div class="flex items-center gap-2 mb-1.5">
+                <div class="stat-icon w-6 h-6 bg-blue-500/15"><svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
+                <p class="text-gray-500 text-xs uppercase tracking-wider">Total Symbols</p>
+            </div>
+            <p class="text-white text-xl font-bold"><span class="stat-counter" data-target="{{ total_symbols }}">0</span></p>
+        </div>
+        <div class="p-4 bg-[#111118] border border-gray-800 rounded-xl premium-card">
+            <div class="flex items-center gap-2 mb-1.5">
+                <div class="stat-icon w-6 h-6 bg-green-500/15"><svg class="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg></div>
+                <p class="text-gray-500 text-xs uppercase tracking-wider">Advancers</p>
+            </div>
+            <p class="text-green-400 text-xl font-bold"><span class="stat-counter" data-target="{{ advancers }}">0</span></p>
+        </div>
+        <div class="p-4 bg-[#111118] border border-gray-800 rounded-xl premium-card">
+            <div class="flex items-center gap-2 mb-1.5">
+                <div class="stat-icon w-6 h-6 bg-red-500/15"><svg class="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>
+                <p class="text-gray-500 text-xs uppercase tracking-wider">Decliners</p>
+            </div>
+            <p class="text-red-400 text-xl font-bold"><span class="stat-counter" data-target="{{ decliners }}">0</span></p>
+        </div>
+        <div class="p-4 bg-[#111118] border border-gray-800 rounded-xl premium-card">
+            <div class="flex items-center gap-2 mb-1.5">
+                <div class="stat-icon w-6 h-6 bg-purple-500/15"><svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
+                <p class="text-gray-500 text-xs uppercase tracking-wider">Volume (24h)</p>
+            </div>
+            <p class="text-white text-xl font-bold"><span class="stat-counter" data-target="{{ total_volume }}" data-prefix="$">0</span></p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+        {% for k, v in all_types.items() %}
+        <a href="/invest/{{ k }}" class="type-card p-4 sm:p-5 bg-[#111118] border border-gray-800 rounded-xl premium-card premium-card-glow relative overflow-hidden hover:border-{{ v.color }}-500/30 group transition-all hover:-translate-y-0.5" data-type="{{ v.name|lower }}">
+            <div class="ambient-orb w-32 h-32 bg-{{ v.color }}-500/5 -top-16 -right-16"></div>
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-lg bg-{{ v.color }}-500/10 flex items-center justify-center group-hover:scale-110 transition icon-glow">
+                        <svg class="w-4 h-4 text-{{ v.color }}-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ v.icon }}"/></svg>
+                    </div>
+                    <h3 class="text-white font-semibold text-sm">{{ v.name }}</h3>
+                </div>
+                <span class="text-xs px-2 py-0.5 bg-{{ v.color }}-500/10 text-{{ v.color }}-300 rounded-full font-mono">{{ v.count }}</span>
+            </div>
+            {% if v.top_gainer %}
+            {% set gsym, gp = v.top_gainer %}
+            <div class="bg-[#0a0a0f] rounded-lg p-2.5 mt-1">
+                <div class="flex items-center justify-between">
+                    <span class="text-white font-mono text-xs font-bold">{{ gsym }}</span>
+                    <span class="text-xs font-mono {{ 'text-green-400' if gp.change_pct >= 0 else 'text-red-400' }}">
+                        <svg class="w-2.5 h-2.5 inline -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="{{ 'M5 10l7-7m0 0l7 7m-7-7v18' if gp.change_pct >= 0 else 'M19 14l-7 7m0 0l-7-7m7 7V3' }}"/></svg>
+                        {{ '+' if gp.change_pct >= 0 }}{{ gp.change_pct }}%
+                    </span>
+                </div>
+                <p class="text-white font-mono text-xs mt-0.5">${{ "{:,.2f}".format(gp.price) }}</p>
+            </div>
+            {% endif %}
+            <div class="mt-3 flex items-center justify-between">
+                <span class="text-xs text-{{ v.color }}-400 group-hover:text-{{ v.color }}-300 transition flex items-center gap-1">View All <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="decorative-line mb-6"></div>
+
+    <div class="grid lg:grid-cols-2 gap-6 mb-8">
+        <div class="p-5 sm:p-6 bg-[#111118] border border-gray-800 rounded-2xl premium-card premium-card-glow relative overflow-hidden">
+            <div class="ambient-orb w-40 h-40 bg-green-500/5 -top-20 -right-20"></div>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="stat-icon bg-green-500/15"><svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg></div>
+                <h3 class="text-white font-semibold">Top Gainers</h3>
+            </div>
+            <div class="space-y-2">
+                {% for sym, p in gainers %}
+                <a href="/invest/{{ p.type }}/{{ sym }}" class="flex items-center justify-between py-2.5 px-3 bg-[#0a0a0f] rounded-lg hover:bg-[#111] transition group">
+                    <div class="flex items-center gap-2.5">
+                        {% set sl = symbol_logos.get(sym, {"path":"","color":"#666"}) %}
+                        <svg class="w-7 h-7 shrink-0" viewBox="0 0 24 24" fill="{{ sl.color }}">{% if sl.path %}<path d="{{ sl.path }}"/>{% else %}<circle cx="12" cy="12" r="11" fill="none" stroke="{{ sl.color }}" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="12" font-weight="bold" fill="{{ sl.color }}">{{ sym[0] }}</text>{% endif %}</svg>
+                        <span class="text-white font-mono text-sm font-bold">{{ sym }}</span>
+                        <span class="text-xs px-1.5 py-0.5 rounded bg-gray-800 text-gray-500">{{ p.type|upper }}</span>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-white font-mono text-sm">${{ "{:,.2f}".format(p.price) }}</p>
+                        <p class="text-green-400 text-xs font-mono"><svg class="w-2.5 h-2.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg> +{{ p.change_pct }}%</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="p-5 sm:p-6 bg-[#111118] border border-gray-800 rounded-2xl premium-card premium-card-glow relative overflow-hidden">
+            <div class="ambient-orb w-40 h-40 bg-red-500/5 -top-20 -right-20"></div>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="stat-icon bg-red-500/15"><svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>
+                <h3 class="text-white font-semibold">Top Losers</h3>
+            </div>
+            <div class="space-y-2">
+                {% for sym, p in losers %}
+                <a href="/invest/{{ p.type }}/{{ sym }}" class="flex items-center justify-between py-2.5 px-3 bg-[#0a0a0f] rounded-lg hover:bg-[#111] transition group">
+                    <div class="flex items-center gap-2.5">
+                        {% set sl = symbol_logos.get(sym, {"path":"","color":"#666"}) %}
+                        <svg class="w-7 h-7 shrink-0" viewBox="0 0 24 24" fill="{{ sl.color }}">{% if sl.path %}<path d="{{ sl.path }}"/>{% else %}<circle cx="12" cy="12" r="11" fill="none" stroke="{{ sl.color }}" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="12" font-weight="bold" fill="{{ sl.color }}">{{ sym[0] }}</text>{% endif %}</svg>
+                        <span class="text-white font-mono text-sm font-bold">{{ sym }}</span>
+                        <span class="text-xs px-1.5 py-0.5 rounded bg-gray-800 text-gray-500">{{ p.type|upper }}</span>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-white font-mono text-sm">${{ "{:,.2f}".format(p.price) }}</p>
+                        <p class="text-red-400 text-xs font-mono"><svg class="w-2.5 h-2.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg> {{ p.change_pct }}%</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const search = document.getElementById('marketSearch');
+    if (search) {
+        search.addEventListener('input', function() {
+            const q = this.value.toLowerCase().trim();
+            document.querySelectorAll('.type-card').forEach(el => {
+                el.style.display = el.dataset.type.includes(q) ? '' : 'none';
+            });
+        });
+    }
+    document.querySelectorAll('.premium-card, .type-card').forEach((el, i) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(12px)';
+        el.style.transition = `all 0.4s ease-out ${i*0.04}s`;
+        requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; });
+    });
+});
+</script>
+{% endblock %}

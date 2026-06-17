@@ -1,0 +1,879 @@
+{% extends "layout.html" %}
+{% block title %}Admin — Foundation Wealth{% endblock %}
+{% block content %}
+<div class="pt-20 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <div class="flex items-center gap-3">
+            <div class="stat-icon bg-purple-500/15 icon-glow">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-white">Admin Panel</h1>
+                <p class="text-gray-500 text-xs sm:text-sm">Full platform oversight</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3">
+            <div class="flex items-center gap-1.5 px-2.5 py-1 bg-[#111118] border border-gray-800 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0"></span>
+                <span class="text-xs text-gray-400 hidden xs:inline">System Online</span>
+            </div>
+            <span class="text-xs px-2.5 py-1 bg-purple-500/10 text-purple-400 rounded-full font-medium truncate max-w-[100px] sm:max-w-none flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg> {{ user.username }}</span>
+        </div>
+    </div>
+
+    <div class="decorative-line mb-6"></div>
+
+    <div class="overflow-x-auto -mx-3 px-3 mb-6 scrollbar-none">
+        <div class="flex gap-1 p-1 bg-[#111118] border border-gray-800 rounded-xl w-max min-w-full">
+            <button class="tab-btn inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg font-medium transition text-white bg-blue-600 whitespace-nowrap" data-tab="dashboard"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> Dashboard</button>
+            <button class="tab-btn inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg font-medium transition text-gray-400 hover:text-white whitespace-nowrap" data-tab="users"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg> Users</button>
+            <button class="tab-btn inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg font-medium transition text-gray-400 hover:text-white whitespace-nowrap" data-tab="trades"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg> Trades</button>
+            <button class="tab-btn inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg font-medium transition text-gray-400 hover:text-white whitespace-nowrap" data-tab="audit"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Audit</button>
+            <button class="tab-btn inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg font-medium transition text-gray-400 hover:text-white whitespace-nowrap relative" data-tab="deposits"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg> Deposits</button>
+            <button class="tab-btn inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg font-medium transition text-gray-400 hover:text-white whitespace-nowrap relative" data-tab="kyc"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> KYC {% if kyc_pending_count > 0 %}<span class="ml-1 px-1.5 py-0.5 text-xs bg-amber-500/20 text-amber-400 rounded-full">{{ kyc_pending_count }}</span>{% endif %}</button>
+        </div>
+    </div>
+
+    <div id="tab-dashboard">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-6">
+            <div class="p-3 sm:p-4 bg-[#111118] border border-gray-800 rounded-xl premium-card relative overflow-hidden">
+                <div class="ambient-orb w-24 h-24 bg-blue-500/5 -top-12 -right-12"></div>
+                <div class="flex items-center justify-between mb-2"><p class="text-gray-500 text-xs">Total Users</p><div class="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg></div></div>
+                <p class="text-white text-lg sm:text-xl font-bold mt-1">{{ users|length }}</p>
+                <p class="text-green-400 text-xs mt-1">{{ verified_count }} verified</p>
+            </div>
+            <div class="p-3 sm:p-4 bg-[#111118] border border-gray-800 rounded-xl premium-card relative overflow-hidden">
+                <div class="ambient-orb w-24 h-24 bg-emerald-500/5 -top-12 -right-12"></div>
+                <div class="flex items-center justify-between mb-2"><p class="text-gray-500 text-xs">Total Balance</p><div class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div></div>
+                <p class="text-white text-lg sm:text-xl font-bold mt-1 truncate">${{ "%.2f"|format(total_balance) }}</p>
+                <p class="text-gray-500 text-xs mt-1">All users</p>
+            </div>
+            <div class="p-3 sm:p-4 bg-[#111118] border border-gray-800 rounded-xl premium-card relative overflow-hidden">
+                <div class="ambient-orb w-24 h-24 bg-violet-500/5 -top-12 -right-12"></div>
+                <div class="flex items-center justify-between mb-2"><p class="text-gray-500 text-xs">Portfolio Value</p><div class="w-7 h-7 rounded-lg bg-violet-500/10 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div></div>
+                <p class="text-white text-lg sm:text-xl font-bold mt-1 truncate">${{ "%.2f"|format(total_portfolio_value) }}</p>
+                <p class="text-gray-500 text-xs mt-1">Holdings</p>
+            </div>
+            <div class="p-3 sm:p-4 bg-[#111118] border border-gray-800 rounded-xl premium-card relative overflow-hidden">
+                <div class="ambient-orb w-24 h-24 bg-amber-500/5 -top-12 -right-12"></div>
+                <div class="flex items-center justify-between mb-2"><p class="text-gray-500 text-xs">Trade Volume</p><div class="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div></div>
+                <p class="text-white text-lg sm:text-xl font-bold mt-1 truncate">${{ "%.0f"|format(total_trade_volume) }}</p>
+                <p class="text-gray-500 text-xs mt-1">{{ total_filled_trades }} filled</p>
+            </div>
+            <div class="p-3 sm:p-4 bg-[#111118] border border-gray-800 rounded-xl premium-card relative overflow-hidden">
+                <div class="ambient-orb w-24 h-24 bg-blue-500/5 -top-12 -right-12"></div>
+                <div class="flex items-center justify-between mb-2"><p class="text-gray-500 text-xs">Algorithms</p><div class="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg></div></div>
+                <p class="text-white text-lg sm:text-xl font-bold mt-1">{{ algorithms|length }}</p>
+                <p class="text-green-400 text-xs mt-1">{{ active_algos }} active</p>
+            </div>
+            <div class="p-3 sm:p-4 bg-[#111118] border border-gray-800 rounded-xl premium-card relative overflow-hidden">
+                <div class="ambient-orb w-24 h-24 bg-purple-500/5 -top-12 -right-12"></div>
+                <div class="flex items-center justify-between mb-2"><p class="text-gray-500 text-xs">Audit Events</p><div class="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div></div>
+                <p class="text-white text-lg sm:text-xl font-bold mt-1">{{ logs|length }}</p>
+                <p class="text-gray-500 text-xs mt-1">Recent</p>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+            <div class="lg:col-span-2 p-4 sm:p-6 bg-[#111118] border border-gray-800 rounded-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-white font-semibold text-sm sm:text-base">User Registrations (7 days)</h3>
+                </div>
+                <canvas id="growthChart" height="200" class="w-full"></canvas>
+            </div>
+            <div class="p-4 sm:p-6 bg-[#111118] border border-gray-800 rounded-xl">
+                <h3 class="text-white font-semibold text-sm sm:text-base mb-4">Recent Users</h3>
+                <div class="space-y-2 sm:space-y-3">
+                    {% for u in recent_users %}
+                    <div class="flex items-center gap-2 sm:gap-3 p-2 bg-[#0a0a0f] rounded-lg">
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs font-bold shrink-0">{{ u.username[:2].upper() }}</div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-white text-xs sm:text-sm truncate">{{ u.username }}</p>
+                            <p class="text-gray-500 text-xs truncate">{{ u.email }}</p>
+                        </div>
+                        <span class="text-xs px-1.5 py-0.5 rounded-full shrink-0 {{ 'bg-green-500/10 text-green-400' if u.verified else 'bg-red-500/10 text-red-400' }}">{{ 'Verified' if u.verified else 'Unverified' }}</span>
+                    </div>
+                    {% else %}
+                    <p class="text-center text-gray-500 py-4 text-sm">No users yet</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
+            <div class="p-4 sm:p-6 bg-[#111118] border border-gray-800 rounded-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-white font-semibold text-sm sm:text-base">Recent Trades</h3>
+                    <span class="text-xs px-2 py-1 bg-blue-500/10 text-blue-400 rounded-full">Last 10</span>
+                </div>
+                <div class="space-y-2 max-h-80 overflow-y-auto">
+                    {% for t in trades[:10] %}
+                    <div class="flex items-center justify-between p-2.5 bg-[#0a0a0f] rounded-lg border border-gray-800/30">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="text-gray-400 text-xs shrink-0">#{{ t.user_id }}</span>
+                            <span class="text-white font-mono text-xs font-medium">{{ t.symbol }}</span>
+                            <span class="px-1.5 py-0.5 text-[10px] rounded {{ 'bg-green-500/10 text-green-400' if t.side == 'buy' else 'bg-red-500/10 text-red-400' }}">{{ t.side|upper }}</span>
+                        </div>
+                        <div class="flex items-center gap-3 shrink-0">
+                            <span class="text-gray-300 font-mono text-xs">{{ t.quantity }} @ {% if t.total %}${{ "%.2f"|format(t.total) }}{% else %}—{% endif %}</span>
+                            <span class="text-xs px-1.5 py-0.5 rounded {{ 'bg-green-500/10 text-green-400' if t.status == 'filled' else 'bg-yellow-500/10 text-yellow-400' if t.status == 'pending' else 'bg-red-500/10 text-red-400' }}">{{ t.status }}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-center text-gray-500 py-4 text-sm">No trades yet</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="p-4 sm:p-6 bg-[#111118] border border-gray-800 rounded-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-white font-semibold text-sm sm:text-base">Algorithms Overview</h3>
+                    <span class="text-xs px-2 py-1 bg-blue-500/10 text-blue-400 rounded-full">{{ algorithms|length }} total</span>
+                </div>
+                <div class="space-y-2 max-h-80 overflow-y-auto">
+                    {% for a in algorithms %}
+                    <div class="flex items-center justify-between p-2.5 sm:p-3 bg-[#0a0a0f] rounded-lg gap-2">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-white text-xs sm:text-sm font-medium truncate">{{ a.name }}</p>
+                            <p class="text-gray-500 text-xs truncate">#{{ a.user_id }} · {{ a.language }}</p>
+                        </div>
+                        <span class="text-xs px-1.5 py-0.5 rounded-full shrink-0 {{ 'bg-green-500/10 text-green-400' if a.status == 'active' else 'bg-yellow-500/10 text-yellow-400' if a.status == 'draft' else 'bg-red-500/10 text-red-400' if a.status == 'error' else 'bg-gray-500/10 text-gray-400' }}">{{ a.status }}</span>
+                    </div>
+                    {% else %}
+                    <p class="text-center text-gray-500 py-4 text-sm">No algorithms yet</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-users" class="hidden">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <div class="relative flex-1 min-w-0">
+                <input type="text" id="userSearch" placeholder="Search users..." class="w-full px-3 sm:px-4 py-2.5 bg-[#111118] border border-gray-800 rounded-lg text-white text-sm placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition">
+                <svg class="absolute right-3 top-3 w-4 h-4 text-gray-600 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <div class="flex gap-2">
+                <select id="roleFilter" class="px-2.5 sm:px-3 py-2.5 bg-[#111118] border border-gray-800 rounded-lg text-gray-400 text-xs sm:text-sm focus:outline-none focus:border-blue-500/50 transition">
+                    <option value="all">All Roles</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">User</option>
+                </select>
+                <select id="statusFilter" class="px-2.5 sm:px-3 py-2.5 bg-[#111118] border border-gray-800 rounded-lg text-gray-400 text-xs sm:text-sm focus:outline-none focus:border-blue-500/50 transition">
+                    <option value="all">All</option>
+                    <option value="verified">Verified</option>
+                    <option value="unverified">Unverified</option>
+                </select>
+            </div>
+            <span class="text-xs text-gray-500 shrink-0" id="userCount">{{ users|length }} users</span>
+        </div>
+
+        <div class="bg-[#111118] border border-gray-800 rounded-xl overflow-hidden">
+            <div class="divide-y divide-gray-800/50" id="userCards">
+                {% for u in users %}
+                <div class="p-3 sm:p-4 user-card cursor-pointer hover:bg-[#0a0a0f]/50 transition premium-card" data-username="{{ u.username.lower() }}" data-email="{{ u.email.lower() }}" data-name="{{ (u.first_name or '')|lower }} {{ (u.last_name or '')|lower }}" data-role="{{ u.role }}" data-verified="{{ 'verified' if u.verified else 'unverified' }}" onclick="openUserDetail({{ u.id }})">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-blue-400 text-xs sm:text-sm font-bold shrink-0">{{ u.username[:2].upper() }}</div>
+                            <div class="min-w-0">
+                                <p class="text-white text-sm sm:text-base font-medium truncate">{{ u.first_name + ' ' + u.last_name if u.first_name else u.username }}</p>
+                                <p class="text-gray-500 text-xs truncate">@{{ u.username }} · {{ u.email }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
+                            <span class="hidden sm:inline text-white font-mono text-xs">${{ "%.2f"|format(u.balance) }}</span>
+                            <span class="text-xs px-2 py-0.5 rounded {{ 'bg-purple-500/10 text-purple-400' if u.role == 'admin' else 'bg-gray-500/10 text-gray-400' }}">{{ u.role }}</span>
+                            <div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full {{ 'bg-green-400' if u.verified else 'bg-red-400' }}"></span><span class="text-xs {{ 'text-green-400' if u.verified else 'text-red-400' }} hidden sm:inline">{{ 'Verified' if u.verified else 'Unverified' }}</span></div>
+                            {% if u.kyc_status == 'verified' %}<span class="text-xs px-1 py-0.5 bg-blue-500/10 text-blue-400 rounded hidden sm:inline">KYC</span>{% endif %}
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs sm:hidden">
+                        <span class="text-white font-mono">${{ "%.2f"|format(u.balance) }}</span>
+                        <span class="{{ 'text-green-400' if u.verified else 'text-red-400' }}">{{ 'Verified' if u.verified else 'Unverified' }}</span>
+                    </div>
+                    <div class="flex items-center justify-end gap-1.5 mt-2" onclick="event.stopPropagation()">
+                        <button onclick="openUserDetail({{ u.id }})" class="px-2.5 py-1 text-xs bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition">View</button>
+                        {% if not u.verified %}
+                        <form method="POST" action="/api/admin/users/{{ u.id }}/action" class="inline">
+                            <input type="hidden" name="action" value="verify">
+                            <button class="px-2.5 py-1 text-xs bg-green-500/10 text-green-400 rounded-lg hover:bg-green-500/20 transition">Verify</button>
+                        </form>
+                        {% endif %}
+                        {% if u.role != 'admin' %}
+                        <form method="POST" action="/api/admin/users/{{ u.id }}/action" class="inline">
+                            <input type="hidden" name="action" value="make_admin">
+                            <button class="px-2.5 py-1 text-xs bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition">Promote</button>
+                        </form>
+                        {% else %}
+                        <form method="POST" action="/api/admin/users/{{ u.id }}/action" class="inline">
+                            <input type="hidden" name="action" value="make_user">
+                            <button class="px-2.5 py-1 text-xs bg-yellow-500/10 text-yellow-400 rounded-lg hover:bg-yellow-500/20 transition">Demote</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center text-gray-500 py-8 text-sm">No users yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-trades" class="hidden">
+        <div class="flex items-center justify-between mb-4 sm:mb-6">
+            <h3 class="text-white font-semibold text-sm sm:text-base">Trade Oversight</h3>
+            <span class="text-xs px-2 py-1 bg-blue-500/10 text-blue-400 rounded-full">{{ trades|length }} trades</span>
+        </div>
+        <div class="bg-[#111118] border border-gray-800 rounded-xl overflow-hidden">
+            <div class="space-y-2 p-3 sm:p-4 max-h-[500px] sm:max-h-[600px] overflow-y-auto">
+                {% for t in trades %}
+                <div class="flex items-center justify-between p-2.5 sm:p-3 bg-[#0a0a0f] rounded-lg border border-gray-800/30 hover:border-gray-700/50 transition premium-card">
+                    <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <span class="text-gray-500 text-xs font-mono shrink-0">#{{ t.id }}</span>
+                        <span class="text-gray-400 text-xs shrink-0">UID:{{ t.user_id }}</span>
+                        <span class="text-white font-mono text-xs sm:text-sm font-medium">{{ t.symbol }}</span>
+                        <span class="px-1.5 py-0.5 text-[10px] sm:text-xs rounded {{ 'bg-green-500/10 text-green-400' if t.side == 'buy' else 'bg-red-500/10 text-red-400' }}">{{ t.side|upper }}</span>
+                    </div>
+                    <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+                        <span class="text-gray-300 font-mono text-xs hidden sm:inline">{{ t.quantity }} @ {% if t.price %}${{ "%.2f"|format(t.price) }}{% else %}Mkt{% endif %}</span>
+                        <span class="text-gray-300 font-mono text-xs hidden md:inline">${{ "%.2f"|format(t.total or 0) }}</span>
+                        <span class="text-xs px-1.5 py-0.5 rounded {{ 'bg-green-500/10 text-green-400' if t.status == 'filled' else 'bg-yellow-500/10 text-yellow-400' if t.status == 'pending' else 'bg-red-500/10 text-red-400' }}">{{ t.status }}</span>
+                        <span class="text-gray-500 text-xs hidden sm:inline">{{ t.created_at.strftime('%m/%d %H:%M') if t.created_at else '' }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center text-gray-500 py-8 text-sm">No trades yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-audit" class="hidden">
+        <div class="flex items-center justify-between mb-4 sm:mb-6">
+            <h3 class="text-white font-semibold text-sm sm:text-base">Audit Log</h3>
+            <span class="text-xs px-2 py-1 bg-blue-500/10 text-blue-400 rounded-full">{{ logs|length }} events</span>
+        </div>
+        <div class="bg-[#111118] border border-gray-800 rounded-xl">
+            <div class="space-y-1 p-3 sm:p-4 max-h-[500px] sm:max-h-[600px] overflow-y-auto">
+                {% for log in logs %}
+                <div class="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 hover:bg-[#0a0a0f] rounded-lg transition">
+                    <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-400 mt-1.5 shrink-0"></div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-blue-400 text-xs sm:text-sm font-medium truncate">{{ log.action }}</span>
+                            <span class="text-gray-600 text-xs shrink-0">{{ log.created_at.strftime('%Y-%m-%d %H:%M') if log.created_at else '' }}</span>
+                        </div>
+                        {% if log.details %}
+                        <p class="text-gray-500 text-xs mt-0.5 truncate">{{ log.details }}</p>
+                        {% endif %}
+                        {% if log.ip_address %}
+                        <p class="text-gray-600 text-xs mt-0.5 font-mono truncate">IP: {{ log.ip_address }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center text-gray-500 py-8 text-sm">No audit logs yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-deposits" class="hidden">
+        <div class="flex items-center justify-between mb-4 sm:mb-6">
+            <h3 class="text-white font-semibold text-sm sm:text-base">Pending Deposits</h3>
+            <span class="text-xs px-2 py-1 bg-blue-500/10 text-blue-400 rounded-full" id="deposit-count-badge">0 pending</span>
+        </div>
+        <div id="deposit-pending-list" class="space-y-3">
+            <div class="text-center text-gray-500 py-8 text-sm">Loading deposits...</div>
+        </div>
+    </div>
+
+    <div class="hidden" id="deposit-review-wrapper">
+        <div id="deposit-review-modal" class="fixed inset-0 z-50">
+            <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeDepositReview()"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-3 sm:p-4">
+                <div class="bg-[#111118] border border-gray-800 rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto shadow-2xl">
+                    <div class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-800 sticky top-0 bg-[#111118] z-10">
+                        <div class="min-w-0">
+                            <h3 class="text-white font-semibold text-base sm:text-lg">Review Deposit</h3>
+                            <p id="deposit-review-user" class="text-gray-500 text-xs truncate"></p>
+                        </div>
+                        <button onclick="closeDepositReview()" class="text-gray-500 hover:text-white transition shrink-0 ml-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                    </div>
+                    <div class="p-4 sm:p-5 space-y-4">
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="col-span-2"><p class="text-gray-500 text-xs">User</p><p id="dr-user" class="text-white"></p></div>
+                            <div><p class="text-gray-500 text-xs">Amount</p><p id="dr-amount" class="text-white font-bold text-lg"></p></div>
+                            <div><p class="text-gray-500 text-xs">Method</p><p id="dr-method" class="text-white"></p></div>
+                            <div class="col-span-2"><p class="text-gray-500 text-xs">Details</p><p id="dr-details" class="text-white text-sm break-all"></p></div>
+                            <div class="col-span-2"><p class="text-gray-500 text-xs">Submitted</p><p id="dr-date" class="text-white text-sm"></p></div>
+                        </div>
+
+                        <div id="deposit-review-error" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"></div>
+
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Admin Note (optional)</label>
+                            <input id="deposit-review-note" type="text" placeholder="e.g. Confirmed on blockchain" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none">
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <button onclick="approveDeposit()" class="w-full sm:flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition text-sm">Approve</button>
+                            <button onclick="rejectDeposit()" class="w-full sm:flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition text-sm">Reject</button>
+                            <button onclick="closeDepositReview()" class="w-full sm:flex-1 px-4 py-2.5 border border-gray-700 hover:border-gray-500 text-gray-300 rounded-lg transition text-sm">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-kyc" class="hidden">
+        <div class="flex items-center justify-between mb-4 sm:mb-6">
+            <h3 class="text-white font-semibold text-sm sm:text-base">KYC Verification Requests</h3>
+            <span class="text-xs px-2 py-1 bg-blue-500/10 text-blue-400 rounded-full" id="kyc-count-badge">{{ kyc_pending_count }} pending</span>
+        </div>
+        <div id="kyc-pending-list" class="space-y-3">
+            <div class="text-center text-gray-500 py-8 text-sm">Loading KYC requests...</div>
+        </div>
+    </div>
+
+    <div class="hidden" id="kyc-review-modal-wrapper">
+        <div id="kyc-review-modal" class="fixed inset-0 z-50">
+            <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeKYCReview()"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-3 sm:p-4">
+                <div class="bg-[#111118] border border-gray-800 rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl">
+                    <div class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-800 sticky top-0 bg-[#111118] z-10">
+                        <div class="min-w-0">
+                            <h3 class="text-white font-semibold text-base sm:text-lg">KYC Review</h3>
+                            <p id="kyc-review-user" class="text-gray-500 text-xs truncate"></p>
+                        </div>
+                        <button onclick="closeKYCReview()" class="text-gray-500 hover:text-white transition shrink-0 ml-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                    </div>
+                    <div class="p-4 sm:p-5 space-y-4 sm:space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                            <div><p class="text-gray-500 text-xs">Full Name</p><p id="kyc-review-fullname" class="text-white text-sm"></p></div>
+                            <div><p class="text-gray-500 text-xs">Email</p><p id="kyc-review-email" class="text-white text-sm truncate"></p></div>
+                            <div><p class="text-gray-500 text-xs">Country</p><p id="kyc-review-country" class="text-white text-sm"></p></div>
+                            <div><p class="text-gray-500 text-xs">DOB</p><p id="kyc-review-dob" class="text-white text-sm"></p></div>
+                            <div><p class="text-gray-500 text-xs">Occupation</p><p id="kyc-review-occupation" class="text-white text-sm"></p></div>
+                            <div><p class="text-gray-500 text-xs">Submitted</p><p id="kyc-review-submitted" class="text-white text-sm"></p></div>
+                            <div class="sm:col-span-2"><p class="text-gray-500 text-xs">Address</p><p id="kyc-review-address" class="text-white text-sm"></p></div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div>
+                                <p class="text-gray-500 text-xs mb-1.5">ID Front</p>
+                                <img id="kyc-review-front" class="w-full rounded-lg border border-gray-700 max-h-36 sm:max-h-48 object-contain bg-[#0a0a0f]">
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-xs mb-1.5">ID Back</p>
+                                <img id="kyc-review-back" class="w-full rounded-lg border border-gray-700 max-h-36 sm:max-h-48 object-contain bg-[#0a0a0f]">
+                            </div>
+                        </div>
+
+                        <div id="kyc-review-error" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"></div>
+
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1.5">Rejection Reason</label>
+                            <input id="kyc-review-reason" type="text" placeholder="e.g. Unclear document image" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none">
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                            <button onclick="approveKYC()" class="w-full sm:flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition text-sm">Approve</button>
+                            <button onclick="rejectKYC()" class="w-full sm:flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition text-sm">Reject</button>
+                            <button onclick="closeKYCReview()" class="w-full sm:flex-1 px-4 py-2.5 border border-gray-700 hover:border-gray-500 text-gray-300 rounded-lg transition text-sm">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-4 sm:p-6 bg-[#111118] border border-gray-800 rounded-xl mt-6 mb-8">
+        <h3 class="text-white font-semibold text-sm sm:text-base mb-4">SMTP Configuration</h3>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">SMTP Server</label>
+                <input type="text" value="smtp.gmail.com" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Port</label>
+                <input type="text" value="587" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Email</label>
+                <input type="email" value="admin@foundationwealth.io" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Password</label>
+                <input type="password" value="••••••••" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50">
+            </div>
+        </div>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+            <button class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition">Save</button>
+            <button class="px-5 py-2 bg-[#0a0a0f] border border-gray-700 hover:border-gray-600 text-gray-300 rounded-lg text-sm transition">Test</button>
+        </div>
+        <p class="text-gray-600 text-xs mt-3">Use an app-specific password from your email provider for secure SMTP authentication.</p>
+    </div>
+</div>
+
+<div id="userModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeUserDetail()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-[#111118] border border-gray-800 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-800 sticky top-0 bg-[#111118] z-10">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div id="modalAvatar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-blue-400 font-bold text-xs sm:text-sm shrink-0"></div>
+                    <div class="min-w-0">
+                        <h3 id="modalName" class="text-white font-semibold text-base sm:text-lg truncate"></h3>
+                        <p id="modalUsername" class="text-gray-500 text-xs truncate"></p>
+                    </div>
+                </div>
+                <button onclick="closeUserDetail()" class="text-gray-500 hover:text-white transition shrink-0 ml-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <div class="p-4 sm:p-6 space-y-5 sm:space-y-6">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                    <div class="p-2.5 sm:p-3 bg-[#0a0a0f] rounded-lg">
+                        <p class="text-gray-500 text-xs">Balance</p>
+                        <p id="modalBalance" class="text-white font-bold text-base sm:text-lg truncate"></p>
+                    </div>
+                    <div class="p-2.5 sm:p-3 bg-[#0a0a0f] rounded-lg">
+                        <p class="text-gray-500 text-xs">Trades</p>
+                        <p id="modalTrades" class="text-white font-bold text-base sm:text-lg"></p>
+                    </div>
+                    <div class="p-2.5 sm:p-3 bg-[#0a0a0f] rounded-lg">
+                        <p class="text-gray-500 text-xs">Volume</p>
+                        <p id="modalVolume" class="text-white font-bold text-base sm:text-lg truncate"></p>
+                    </div>
+                    <div class="p-2.5 sm:p-3 bg-[#0a0a0f] rounded-lg">
+                        <p class="text-gray-500 text-xs">Joined</p>
+                        <p id="modalJoined" class="text-white font-bold text-sm sm:text-lg"></p>
+                    </div>
+                </div>
+
+                <div class="grid sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                        <h4 class="text-white text-sm font-medium mb-3">Account Details</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between py-1.5 border-b border-gray-800/50 gap-2">
+                                <span class="text-gray-500 shrink-0">Email</span>
+                                <span id="modalEmail" class="text-gray-300 text-right truncate"></span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-gray-800/50 gap-2">
+                                <span class="text-gray-500 shrink-0">Phone</span>
+                                <span id="modalPhone" class="text-gray-300 text-right"></span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-gray-800/50 gap-2">
+                                <span class="text-gray-500 shrink-0">Country</span>
+                                <span id="modalCountry" class="text-gray-300 text-right"></span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-gray-800/50 gap-2">
+                                <span class="text-gray-500 shrink-0">Role</span>
+                                <span id="modalRole" class="text-gray-300 text-right"></span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-gray-800/50 gap-2">
+                                <span class="text-gray-500 shrink-0">Status</span>
+                                <span id="modalStatus" class="text-gray-300 text-right"></span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-gray-800/50 gap-2">
+                                <span class="text-gray-500 shrink-0">KYC</span>
+                                <span id="modalKYC" class="text-gray-300 text-right"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-white text-sm font-medium mb-3">Portfolio</h4>
+                        <div id="modalPortfolio" class="space-y-2 max-h-40 overflow-y-auto">
+                            <p class="text-gray-500 text-xs text-center py-4">No holdings</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-white text-sm font-medium mb-3">Recent Trades</h4>
+                <div id="modalTradesBody" class="space-y-2 max-h-48 overflow-y-auto">
+                    <p class="text-center text-gray-500 py-4 text-xs">No trades</p>
+                </div>
+                </div>
+
+                <div>
+                    <h4 class="text-white text-sm font-medium mb-3">Algorithms</h4>
+                    <div id="modalAlgos" class="space-y-2">
+                        <p class="text-gray-500 text-xs text-center py-2">No algorithms</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media (max-width: 639px) {
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+}
+</style>
+
+<script>
+const growthData = {{ growth_data|tojson }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('growthChart');
+    if (ctx) {
+        const canvas = ctx.getContext('2d');
+        const w = ctx.parentElement.clientWidth;
+        ctx.width = Math.min(w, 800) * 2;
+        ctx.height = 200 * 2;
+        ctx.scale(2, 2);
+        const cw = Math.min(w, 800), ch = 200;
+
+        canvas.clearRect(0, 0, cw, ch);
+        canvas.strokeStyle = '#1f2937';
+        canvas.lineWidth = 1;
+        for (let i = 0; i < 4; i++) {
+            const y = ch - (ch / 4) * i;
+            canvas.beginPath();
+            canvas.moveTo(35, y);
+            canvas.lineTo(cw - 10, y);
+            canvas.stroke();
+        }
+
+        const labels = growthData.labels;
+        const counts = growthData.counts;
+        const maxVal = Math.max(...counts, 1);
+        const stepX = Math.max((cw - 55) / (labels.length - 1), 20);
+        const points = counts.map((c, i) => ({
+            x: 40 + i * stepX,
+            y: ch - 20 - ((c / maxVal) * (ch - 40))
+        }));
+
+        canvas.beginPath();
+        canvas.strokeStyle = '#2563eb';
+        canvas.lineWidth = 2.5;
+        canvas.lineJoin = 'round';
+        points.forEach((p, i) => i === 0 ? canvas.moveTo(p.x, p.y) : canvas.lineTo(p.x, p.y));
+        canvas.stroke();
+
+        canvas.fillStyle = 'rgba(37, 99, 235, 0.08)';
+        canvas.lineTo(points[points.length - 1].x, ch - 20);
+        canvas.lineTo(points[0].x, ch - 20);
+        canvas.closePath();
+        canvas.fill();
+
+        points.forEach((p, i) => {
+            canvas.beginPath();
+            canvas.arc(p.x, p.y, 3, 0, Math.PI * 2);
+            canvas.fillStyle = '#2563eb';
+            canvas.fill();
+        });
+
+        canvas.fillStyle = '#6b7280';
+        canvas.font = '9px monospace';
+        labels.forEach((l, i) => {
+            const x = Math.max(40 + i * stepX - 10, 25);
+            canvas.fillText(l, x, ch - 5);
+        });
+    }
+});
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('text-white', 'bg-blue-600');
+        b.classList.add('text-gray-400');
+    });
+    const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+    if (btn) {
+        btn.classList.remove('text-gray-400');
+        btn.classList.add('text-white', 'bg-blue-600');
+        btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+
+    document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('hidden'));
+    document.getElementById('tab-' + tab)?.classList.remove('hidden');
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+document.getElementById('userSearch')?.addEventListener('input', filterUsers);
+document.getElementById('roleFilter')?.addEventListener('change', filterUsers);
+document.getElementById('statusFilter')?.addEventListener('change', filterUsers);
+
+function filterUsers() {
+    const q = document.getElementById('userSearch').value.toLowerCase();
+    const role = document.getElementById('roleFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    let count = 0;
+    document.querySelectorAll('.user-row, .user-card').forEach(row => {
+        const name = row.dataset.name;
+        const username = row.dataset.username;
+        const email = row.dataset.email;
+        const r = row.dataset.role;
+        const v = row.dataset.verified;
+        const match = (!q || name.includes(q) || username.includes(q) || email.includes(q)) &&
+                      (role === 'all' || r === role) &&
+                      (status === 'all' || v === status);
+        row.style.display = match ? '' : 'none';
+        if (match) count++;
+    });
+    document.getElementById('userCount').textContent = count + ' users';
+}
+
+async function openUserDetail(userId) {
+    const modal = document.getElementById('userModal');
+    modal.classList.remove('hidden');
+    document.getElementById('modalAvatar').textContent = '..';
+    document.getElementById('modalName').textContent = 'Loading...';
+    document.getElementById('modalUsername').textContent = '';
+    document.body.style.overflow = 'hidden';
+
+    try {
+        const res = await fetch('/api/admin/users/' + userId);
+        const data = await res.json();
+
+        document.getElementById('modalAvatar').textContent = (data.first_name || data.username).slice(0, 2).toUpperCase();
+        document.getElementById('modalName').textContent = (data.first_name || '') + ' ' + (data.last_name || '') || data.username;
+        document.getElementById('modalUsername').textContent = '@' + data.username + (data.country ? ' · ' + data.country : '');
+        document.getElementById('modalEmail').textContent = data.email;
+        document.getElementById('modalPhone').textContent = data.phone || '—';
+        document.getElementById('modalCountry').textContent = data.country || '—';
+        document.getElementById('modalRole').innerHTML = '<span class="px-2 py-0.5 text-xs rounded ' + (data.role === 'admin' ? 'bg-purple-500/10 text-purple-400' : 'bg-gray-500/10 text-gray-400') + '">' + data.role + '</span>';
+        document.getElementById('modalStatus').innerHTML = '<span class="text-xs ' + (data.verified ? 'text-green-400' : 'text-red-400') + '">' + (data.verified ? 'Verified' : 'Unverified') + '</span>';
+        document.getElementById('modalKYC').textContent = data.kyc_status || 'none';
+
+        document.getElementById('modalBalance').textContent = '$' + (data.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('modalTrades').textContent = data.trades_count || 0;
+        document.getElementById('modalVolume').textContent = '$' + (data.filled_volume || 0).toLocaleString(undefined, {minimumFractionDigits: 0});
+        const d = data.created_at ? new Date(data.created_at) : new Date();
+        document.getElementById('modalJoined').textContent = d.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+
+        const ptBody = document.getElementById('modalPortfolio');
+        if (data.portfolio && data.portfolio.length > 0) {
+            ptBody.innerHTML = data.portfolio.map(p => {
+                const val = (p.quantity * p.avg_price).toFixed(2);
+                return '<div class="flex items-center justify-between py-1.5 border-b border-gray-800/50 text-sm gap-2"><span class="text-gray-300 font-mono text-xs shrink-0">' + p.symbol + '</span><span class="text-gray-400 text-xs text-right truncate">' + p.quantity + ' @ $' + p.avg_price.toFixed(2) + ' <span class="text-white font-medium">($' + val + ')</span></span></div>';
+            }).join('');
+        } else {
+            ptBody.innerHTML = '<p class="text-gray-500 text-xs text-center py-4">No holdings</p>';
+        }
+
+        const tradesBody = document.getElementById('modalTradesBody');
+        if (data.trades && data.trades.length > 0) {
+            tradesBody.innerHTML = data.trades.map(t => {
+                const sideClass = t.side === 'buy' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400';
+                const statusClass = t.status === 'filled' ? 'bg-green-500/10 text-green-400' : t.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400';
+                return '<div class="flex items-center justify-between p-2 bg-[#0a0a0f] rounded-lg border border-gray-800/30"><div class="flex items-center gap-2 min-w-0"><span class="text-white font-mono text-xs font-medium">' + t.symbol + '</span><span class="px-1.5 py-0.5 text-[10px] rounded ' + sideClass + '">' + t.side.toUpperCase() + '</span></div><div class="flex items-center gap-3 shrink-0"><span class="text-gray-300 font-mono text-xs">' + t.quantity + ' @ $' + (t.filled_price || t.price || 0).toFixed(2) + '</span><span class="text-xs px-1.5 py-0.5 rounded ' + statusClass + '">' + t.status + '</span></div></div>';
+            }).join('');
+        } else {
+            tradesBody.innerHTML = '<p class="text-center text-gray-500 py-4 text-xs">No trades</p>';
+        }
+
+        const algosBody = document.getElementById('modalAlgos');
+        if (data.algorithms && data.algorithms.length > 0) {
+            algosBody.innerHTML = data.algorithms.map(a => {
+                const statusClass = a.status === 'active' ? 'bg-green-500/10 text-green-400' : a.status === 'draft' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400';
+                return '<div class="flex items-center justify-between p-2.5 bg-[#0a0a0f] rounded-lg gap-2"><div class="min-w-0"><p class="text-white text-sm font-medium truncate">' + a.name + '</p><p class="text-gray-500 text-xs">' + a.language + '</p></div><span class="text-xs px-2 py-0.5 rounded shrink-0 ' + statusClass + '">' + a.status + '</span></div>';
+            }).join('');
+        } else {
+            algosBody.innerHTML = '<p class="text-gray-500 text-xs text-center py-2">No algorithms</p>';
+        }
+    } catch (e) {
+        document.getElementById('modalName').textContent = 'Error loading user';
+    }
+}
+
+function closeUserDetail() {
+    document.getElementById('userModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeUserDetail(); closeKYCReview(); }
+});
+
+const kycReviewUserId = { current: null };
+
+function loadKYCPending() {
+    const list = document.getElementById('kyc-pending-list');
+    list.innerHTML = '<div class="text-center text-gray-500 py-8 text-sm">Loading...</div>';
+    fetch('/api/admin/kyc/pending')
+        .then(r => r.json())
+        .then(data => {
+            if (data.length === 0) {
+                list.innerHTML = '<div class="text-center text-gray-500 py-8 text-sm">No pending KYC requests</div>';
+                return;
+            }
+            list.innerHTML = data.map(u => `
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 bg-[#111118] border border-gray-800 rounded-xl">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-sm font-bold shrink-0">${(u.first_name || u.username).slice(0,2).toUpperCase()}</div>
+                        <div class="min-w-0">
+                            <p class="text-white font-medium text-sm truncate">${u.first_name || ''} ${u.last_name || ''}</p>
+                            <p class="text-gray-500 text-xs truncate">${u.email} · ${u.country || '—'}</p>
+                            <p class="text-gray-600 text-xs">Submitted ${u.submitted_at ? new Date(u.submitted_at).toLocaleDateString() : '—'}</p>
+                        </div>
+                    </div>
+                    <button onclick="openKYCReview(${u.id})" class="w-full sm:w-auto px-3 py-2 sm:py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition text-center">Review</button>
+                </div>
+            `).join('');
+            document.getElementById('kyc-count-badge').textContent = data.length + ' pending';
+        })
+        .catch(() => {
+            list.innerHTML = '<div class="text-center text-red-400 py-8 text-sm">Failed to load KYC requests</div>';
+        });
+}
+
+async function openKYCReview(userId) {
+    kycReviewUserId.current = userId;
+    document.getElementById('kyc-review-modal-wrapper').classList.remove('hidden');
+    document.getElementById('kyc-review-user').textContent = 'Loading...';
+    document.getElementById('kyc-review-error').classList.add('hidden');
+    document.getElementById('kyc-review-reason').value = '';
+    document.body.style.overflow = 'hidden';
+
+    const res = await fetch('/api/admin/users/' + userId);
+    const data = await res.json();
+
+    document.getElementById('kyc-review-user').textContent = data.email + ' (#' + data.id + ')';
+    document.getElementById('kyc-review-fullname').textContent = (data.first_name || '') + ' ' + (data.last_name || '');
+    document.getElementById('kyc-review-email').textContent = data.email;
+    document.getElementById('kyc-review-country').textContent = data.country || '—';
+    document.getElementById('kyc-review-dob').textContent = data.date_of_birth || '—';
+    document.getElementById('kyc-review-occupation').textContent = data.occupation || '—';
+    document.getElementById('kyc-review-submitted').textContent = data.created_at ? new Date(data.created_at).toLocaleDateString() : '—';
+    document.getElementById('kyc-review-address').textContent = [data.address, data.city, data.state, data.zip_code].filter(Boolean).join(', ') || '—';
+
+    const frontImg = document.getElementById('kyc-review-front');
+    frontImg.src = data.id_front_path ? data.id_front_path : '';
+    frontImg.alt = data.id_front_path ? 'ID Front' : 'No image';
+    const backImg = document.getElementById('kyc-review-back');
+    backImg.src = data.id_back_path ? data.id_back_path : '';
+    backImg.alt = data.id_back_path ? 'ID Back' : 'No image';
+}
+
+function closeKYCReview() {
+    document.getElementById('kyc-review-modal-wrapper').classList.add('hidden');
+    document.body.style.overflow = '';
+    kycReviewUserId.current = null;
+}
+
+async function approveKYC() {
+    await reviewKYC('approve');
+}
+
+async function rejectKYC() {
+    const reason = document.getElementById('kyc-review-reason').value.trim();
+    if (!reason) {
+        document.getElementById('kyc-review-error').textContent = 'Please provide a rejection reason';
+        document.getElementById('kyc-review-error').classList.remove('hidden');
+        return;
+    }
+    await reviewKYC('reject');
+}
+
+async function reviewKYC(action) {
+    const uid = kycReviewUserId.current;
+    if (!uid) return;
+    const fd = new FormData();
+    fd.append('action', action);
+    fd.append('reason', document.getElementById('kyc-review-reason').value.trim());
+    try {
+        const res = await fetch('/api/admin/kyc/' + uid + '/review', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        closeKYCReview();
+        loadKYCPending();
+    } catch (e) {
+        document.getElementById('kyc-review-error').textContent = e.detail || e.error || 'Review failed';
+        document.getElementById('kyc-review-error').classList.remove('hidden');
+    }
+}
+
+document.querySelector('.tab-btn[data-tab="kyc"]')?.addEventListener('click', () => {
+    setTimeout(loadKYCPending, 100);
+});
+
+const depositReviewData = { current: null };
+
+function loadPendingDeposits() {
+    const list = document.getElementById('deposit-pending-list');
+    list.innerHTML = '<div class="text-center text-gray-500 py-8 text-sm">Loading...</div>';
+    fetch('/api/admin/deposits/pending')
+        .then(r => r.json())
+        .then(data => {
+            if (data.length === 0) {
+                list.innerHTML = '<div class="text-center text-gray-500 py-8 text-sm">No pending deposits</div>';
+                return;
+            }
+            list.innerHTML = data.map(d => {
+                const details = d.method === 'crypto' ? d.details.currency + ' - ' + d.details.tx_hash.slice(0, 16) + '...' : (d.details.card_type || '') + ' - ' + (d.details.code || '');
+                const icon = d.method === 'crypto' ? '₿' : '🎴';
+                return '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 bg-[#111118] border border-gray-800 rounded-xl"><div class="flex items-center gap-3 min-w-0"><div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-sm font-bold shrink-0">' + icon + '</div><div class="min-w-0"><p class="text-white font-medium text-sm truncate">$' + d.amount.toLocaleString() + ' · ' + d.method.replace('_', ' ') + '</p><p class="text-gray-500 text-xs truncate">' + d.email + ' · ' + details + '</p><p class="text-gray-600 text-xs">' + new Date(d.created_at).toLocaleDateString() + '</p></div></div><button onclick="openDepositReview(' + d.id + ')" class="w-full sm:w-auto px-3 py-2 sm:py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition text-center">Review</button></div>';
+            }).join('');
+            document.getElementById('deposit-count-badge').textContent = data.length + ' pending';
+        })
+        .catch(() => {
+            list.innerHTML = '<div class="text-center text-red-400 py-8 text-sm">Failed to load deposits</div>';
+        });
+}
+
+async function openDepositReview(depositId) {
+    depositReviewData.current = depositId;
+    document.getElementById('deposit-review-wrapper').classList.remove('hidden');
+    document.getElementById('deposit-review-error').classList.add('hidden');
+    document.getElementById('deposit-review-note').value = '';
+    document.body.style.overflow = 'hidden';
+
+    const res = await fetch('/api/admin/deposits/pending');
+    const all = await res.json();
+    const d = all.find(x => x.id === depositId);
+    if (!d) return;
+
+    document.getElementById('deposit-review-user').textContent = d.email + ' (#' + d.user_id + ')';
+    document.getElementById('dr-user').textContent = d.username + ' (' + d.email + ')';
+    document.getElementById('dr-amount').textContent = '$' + d.amount.toLocaleString();
+    document.getElementById('dr-method').textContent = d.method === 'crypto' ? 'Crypto' : 'Gift Card';
+    document.getElementById('dr-details').textContent = d.method === 'crypto'
+        ? d.details.currency + ' TX: ' + d.details.tx_hash
+        : d.details.card_type + ' Code: ' + d.details.code;
+    document.getElementById('dr-date').textContent = new Date(d.created_at).toLocaleString();
+}
+
+function closeDepositReview() {
+    document.getElementById('deposit-review-wrapper').classList.add('hidden');
+    document.body.style.overflow = '';
+    depositReviewData.current = null;
+}
+
+async function approveDeposit() {
+    await reviewDeposit('approve');
+}
+
+async function rejectDeposit() {
+    await reviewDeposit('reject');
+}
+
+async function reviewDeposit(action) {
+    const id = depositReviewData.current;
+    if (!id) return;
+    const fd = new FormData();
+    fd.append('action', action);
+    fd.append('note', document.getElementById('deposit-review-note').value.trim());
+    try {
+        const res = await fetch('/api/admin/deposits/' + id + '/review', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        closeDepositReview();
+        loadPendingDeposits();
+    } catch (e) {
+        document.getElementById('deposit-review-error').textContent = e.detail || e.error || 'Review failed';
+        document.getElementById('deposit-review-error').classList.remove('hidden');
+    }
+}
+
+document.querySelector('.tab-btn[data-tab="deposits"]')?.addEventListener('click', () => {
+    setTimeout(loadPendingDeposits, 100);
+});
+</script>
+{% endblock %}

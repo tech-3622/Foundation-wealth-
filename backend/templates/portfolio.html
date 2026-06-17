@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% block title %}Portfolio - Foundation Wealth{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-[#0a0a0f]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white">Portfolio</h1>
+                <p class="text-gray-500 text-sm mt-1">Your holdings and performance</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/invest" class="text-xs px-3 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white transition flex items-center gap-1.5 shadow-lg shadow-blue-500/20"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Browse Markets</a>
+                <a href="/wallet" class="text-xs px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg> Deposit</a>
+            </div>
+        </div>
+
+        <div id="portfolio-stats" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-[#111118] border border-gray-800/50 rounded-xl p-4 premium-card"><p class="text-gray-500 text-xs mb-1">Total Value</p><p id="stat-total-value" class="text-white text-xl font-bold font-mono">--</p></div>
+            <div class="bg-[#111118] border border-gray-800/50 rounded-xl p-4 premium-card"><p class="text-gray-500 text-xs mb-1">Total P&amp;L</p><p id="stat-total-pnl" class="text-white text-xl font-bold font-mono">--</p></div>
+            <div class="bg-[#111118] border border-gray-800/50 rounded-xl p-4 premium-card"><p class="text-gray-500 text-xs mb-1">Win Rate</p><p id="stat-win-rate" class="text-white text-xl font-bold font-mono">--</p></div>
+            <div class="bg-[#111118] border border-gray-800/50 rounded-xl p-4 premium-card"><p class="text-gray-500 text-xs mb-1">Positions</p><p id="stat-positions" class="text-white text-xl font-bold font-mono">--</p></div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-6 mb-8">
+            <div class="lg:col-span-2 p-0.5 bg-gradient-to-br from-blue-500/20 via-transparent to-purple-500/20 rounded-xl premium-card">
+                <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-white font-semibold">Holdings</h3>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 font-medium" id="positions-count">0</span>
+                    </div>
+                    <div id="positions-list"></div>
+                    <div id="positions-empty" class="hidden text-center py-12"><div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/5 flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8 text-blue-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div><p class="text-gray-500 text-sm font-medium">No positions yet</p><p class="text-gray-600 text-xs mt-1">Start trading to build your portfolio</p><a href="/invest" class="inline-block mt-4 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-semibold transition hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-500/20">Browse Markets</a></div>
+                </div>
+            </div>
+            <div class="p-0.5 bg-gradient-to-br from-emerald-500/20 via-transparent to-emerald-500/10 rounded-xl premium-card">
+                <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
+                    <h3 class="text-white font-semibold mb-4">Allocation</h3>
+                    <canvas id="allocationChart" class="w-full" style="height:220px"></canvas>
+                    <div id="allocation-legend" class="mt-4 space-y-1.5"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const COLORS = ['#3b82f6','#a78bfa','#34d399','#fbbf24','#f87171','#f472b6','#60a5fa','#818cf8','#f97316','#14b8a6'];
+let currentPositions = [];
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/portfolio/stats').then(r=>r.json()).then(data => {
+        currentPositions = data.positions || [];
+        document.getElementById('stat-total-value').textContent = '$' + (data.total_value || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+        const pnl = data.total_pnl || 0;
+        const pnlEl = document.getElementById('stat-total-pnl');
+        pnlEl.textContent = (pnl >= 0 ? '+' : '') + '$' + pnl.toLocaleString(undefined, {minimumFractionDigits:2});
+        pnlEl.className = (pnl >= 0 ? 'text-emerald-400' : 'text-red-400') + ' text-xl font-bold font-mono';
+        document.getElementById('stat-win-rate').textContent = (data.win_rate || 0) + '%';
+        document.getElementById('stat-positions').textContent = data.positions_count || 0;
+        document.getElementById('positions-count').textContent = data.positions_count || 0;
+        const list = document.getElementById('positions-list');
+        const empty = document.getElementById('positions-empty');
+        if (!data.positions || data.positions.length === 0) {
+            list.innerHTML = '';
+            empty.classList.remove('hidden');
+            drawDoughnutChart([], 'allocationChart', 'allocation-legend');
+            return;
+        }
+        empty.classList.add('hidden');
+        data.positions.forEach((p, i) => {
+            const pnlClass = p.pnl >= 0 ? 'text-emerald-400' : 'text-red-400';
+            const bgPnl = p.pnl >= 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-red-500/10 border-red-500/20';
+            const arrow = p.pnl >= 0 ? 'M5 10l7-7m0 0l7 7m-7-7v18' : 'M19 14l-7 7m0 0l-7-7m7 7V3';
+            list.innerHTML += `<div class="flex items-center justify-between p-3 sm:p-4 bg-[#0a0a0f] rounded-xl mb-2 border border-gray-800/30 hover:border-gray-700/50 transition premium-card"><div class="flex items-center gap-3 min-w-0"><div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/5 flex items-center justify-center shrink-0"><span class="text-xs font-bold text-blue-400">${p.symbol.slice(0,2)}</span></div><div><p class="text-white text-sm font-semibold">${p.symbol}</p><p class="text-gray-500 text-xs">${p.quantity} shares @ $${(p.avg_price||0).toLocaleString()}</p></div></div><div class="text-right shrink-0"><p class="text-white font-mono text-sm font-semibold">$${(p.value||0).toLocaleString(undefined, {minimumFractionDigits:2})}</p><p class="${pnlClass} font-mono text-xs">${p.pnl >= 0 ? '+' : ''}$${Math.abs(p.pnl||0).toLocaleString(undefined, {minimumFractionDigits:2})} (${p.pnl_pct >= 0 ? '+' : ''}${(p.pnl_pct||0).toFixed(2)}%)</p></div><a href="/invest/${p.symbol.includes('/') ? 'forex' : p.symbol.includes('X') && !p.symbol.startsWith('X') ? 'index' : p.symbol.startsWith('X') ? 'commodity' : 'stock'}/${p.symbol}" class="ml-3 px-2.5 py-1.5 text-xs rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transition shadow-lg shadow-blue-500/20 shrink-0">Trade</a></div>`;
+        });
+        drawDoughnutChart(data.positions, 'allocationChart', 'allocation-legend');
+    });
+});
+function drawDoughnutChart(data, canvasId, legendId) {
+    const canvas = document.getElementById(canvasId);
+    const legend = document.getElementById(legendId);
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.offsetWidth * dpr; canvas.width = W;
+    const H = 220 * dpr; canvas.height = H;
+    ctx.scale(dpr, dpr); ctx.clearRect(0, 0, canvas.offsetWidth, 220);
+    if (!data || data.length === 0) { ctx.fillStyle='#555'; ctx.font='14px Inter'; ctx.textAlign='center'; ctx.fillText('No holdings', canvas.offsetWidth/2, 110); legend.innerHTML=''; return; }
+    const cx = canvas.offsetWidth/2, cy = 110, r = Math.min(canvas.offsetWidth,220)/2-45, ir = r*0.5;
+    const total = data.reduce((s,d)=>s+(d.value||0),0); let angle = -Math.PI/2;
+    legend.innerHTML = '';
+    data.forEach((d,i) => {
+        const slice = ((d.value||0)/total)*Math.PI*2;
+        ctx.beginPath(); ctx.arc(cx,cy,r,angle,angle+slice); ctx.arc(cx,cy,ir,angle+slice,angle,true); ctx.closePath();
+        ctx.fillStyle = COLORS[i % COLORS.length]; ctx.fill();
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-1.5 text-xs';
+        div.innerHTML = '<span class="w-2.5 h-2.5 rounded-full" style="background:'+COLORS[i%COLORS.length]+'"></span>'+d.symbol+' $'+(d.value||0).toLocaleString();
+        legend.appendChild(div);
+        angle += slice;
+    });
+    ctx.beginPath(); ctx.arc(cx,cy,ir,0,Math.PI*2); ctx.fillStyle='#111118'; ctx.fill();
+}
+</script>
+{% endblock %}

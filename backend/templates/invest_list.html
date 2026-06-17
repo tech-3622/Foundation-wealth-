@@ -1,0 +1,174 @@
+{% extends "layout.html" %}
+{% block title %}{{ type_info.name }} — Foundation Wealth{% endblock %}
+{% block content %}
+<div class="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+            <div class="stat-icon bg-{{ type_info.color }}-500/15 icon-glow">
+                <svg class="w-5 h-5 text-{{ type_info.color }}-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ type_info.icon }}"/></svg>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-2xl font-bold text-white">{{ type_info.name }}</h1>
+                    <span class="text-xs px-2 py-0.5 bg-{{ type_info.color }}-500/10 text-{{ type_info.color }}-300 rounded-full font-mono">{{ symbols|length }} pairs</span>
+                </div>
+                <p class="text-gray-500 text-sm">Browse and trade {{ type_info.name|lower }}</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="/invest" class="px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-gray-500 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg> All Markets</a>
+            <a href="/dashboard" class="px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-gray-500 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> Dashboard</a>
+        </div>
+    </div>
+
+    <div class="decorative-line mb-6"></div>
+
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div class="flex flex-wrap gap-2">
+            <a href="/invest" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition text-gray-400 bg-[#111118] border border-gray-800 hover:border-gray-600 hover:text-white">
+                All
+            </a>
+            {% for k, v in all_types.items() %}
+            <a href="/invest/{{ k }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition {{ 'text-white bg-blue-600' if k == asset_type else 'text-gray-400 bg-[#111118] border border-gray-800 hover:border-gray-600 hover:text-white' }}">
+                {% if k == asset_type %}<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{% endif %}
+                {{ v }}
+            </a>
+            {% endfor %}
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input id="symbolSearch" type="text" placeholder="Search..." class="w-36 sm:w-44 pl-8 pr-3 py-1.5 bg-[#111118] border border-gray-800 rounded-lg text-white text-xs focus:border-blue-500 outline-none">
+            </div>
+            <select id="sortSelect" class="px-2.5 py-1.5 bg-[#111118] border border-gray-800 rounded-lg text-gray-300 text-xs focus:border-blue-500 outline-none">
+                <option value="name">Name</option>
+                <option value="price-asc">Price ↑</option>
+                <option value="price-desc">Price ↓</option>
+                <option value="change-asc">Change ↑</option>
+                <option value="change-desc" selected>Change ↓</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="symbolGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+        {% for sym, info in symbols.items() %}
+        {% set p = prices.get(sym, {}) %}
+        {% set pos = user_positions.get(sym) if user_positions else None %}
+        <a href="/invest/{{ asset_type }}/{{ sym }}" class="symbol-card block p-5 bg-[#111118] border border-gray-800 rounded-xl premium-card premium-card-glow relative overflow-hidden hover:border-{{ type_info.color }}-500/30 group" data-symbol="{{ sym }}" data-price="{{ p.price or 0 }}" data-change="{{ p.change_pct or 0 }}">
+            <div class="ambient-orb w-32 h-32 bg-{{ type_info.color }}-500/5 -top-16 -right-16"></div>
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-2.5">
+                        {% set sl = symbol_logos.get(sym, {"path":"","color":"#666"}) %}
+                        <svg class="w-9 h-9 shrink-0" viewBox="0 0 24 24" fill="{{ sl.color }}">{% if sl.path %}<path d="{{ sl.path }}"/>{% else %}<circle cx="12" cy="12" r="11" fill="none" stroke="{{ sl.color }}" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="12" font-weight="bold" fill="{{ sl.color }}">{{ sym[0] }}</text>{% endif %}</svg>
+                        <div>
+                            <p class="text-white font-mono font-bold text-base">{{ sym }}</p>
+                            <span class="{{ type_info.badge }} px-2 py-0.5 text-[10px] font-medium rounded-md">{{ type_info.name }}</span>
+                        </div>
+                    </div>
+                    <button onclick="event.stopPropagation();event.preventDefault();toggleWatchlist('{{ sym }}',this)" class="wl-btn text-gray-600 hover:text-yellow-400 transition p-1 shrink-0" title="Add to watchlist"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg></button>
+                </div>
+            <p class="text-white text-xl font-bold font-mono number-glow">${{ "{:,.2f}".format(p.price) if p.price else '—' }}</p>
+            {% if p.change_pct is defined %}
+            <p class="flex items-center gap-1 text-sm font-mono mt-1 {{ 'text-green-400' if p.change_pct >= 0 else 'text-red-400' }}">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ 'M5 10l7-7m0 0l7 7m-7-7v18' if p.change_pct >= 0 else 'M19 14l-7 7m0 0l-7-7m7 7V3' }}"/></svg>
+                {{ '+' if p.change_pct >= 0 }}{{ p.change_pct }}% <span class="text-gray-600 font-normal">(${{ '{:,.2f}'.format(p.change|abs) }})</span>
+            </p>
+            {% endif %}
+            <div class="mt-4 pt-3 border-t border-gray-800/50 flex items-center justify-between">
+                <span class="text-xs text-blue-400 group-hover:text-blue-300 transition font-medium flex items-center gap-1">View Details <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></span>
+                {% if pos %}
+                <span class="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-300 rounded-full font-mono">{{ pos.qty }} held</span>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% if not symbols %}
+    <div class="text-center py-16">
+        <svg class="w-16 h-16 text-gray-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        <p class="text-gray-500 text-lg">No {{ type_info.name|lower }} available</p>
+        <p class="text-gray-600 text-sm mt-1">Check back later for new listings</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('symbolSearch');
+    const sortSelect = document.getElementById('sortSelect');
+    const grid = document.getElementById('symbolGrid');
+    if (!grid) return;
+
+    const cards = Array.from(grid.querySelectorAll('.symbol-card'));
+    const originalOrder = cards.map(c => c.outerHTML);
+
+    function filterAndSort() {
+        const q = (searchInput ? searchInput.value.toLowerCase() : '').trim();
+        const sortVal = sortSelect ? sortSelect.value : 'name';
+
+        let filtered = cards.filter(el => {
+            return el.dataset.symbol.toLowerCase().includes(q);
+        });
+
+        filtered.sort((a, b) => {
+            const pa = parseFloat(a.dataset.price) || 0;
+            const pb = parseFloat(b.dataset.price) || 0;
+            const ca = parseFloat(a.dataset.change) || 0;
+            const cb = parseFloat(b.dataset.change) || 0;
+            const na = a.dataset.symbol;
+            const nb = b.dataset.symbol;
+            switch (sortVal) {
+                case 'price-asc': return pa - pb;
+                case 'price-desc': return pb - pa;
+                case 'change-asc': return ca - cb;
+                case 'change-desc': return cb - ca;
+                default: return na < nb ? -1 : na > nb ? 1 : 0;
+            }
+        });
+
+        grid.innerHTML = '';
+        filtered.forEach(el => grid.appendChild(el));
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterAndSort);
+    if (sortSelect) sortSelect.addEventListener('change', filterAndSort);
+
+    document.querySelectorAll('.premium-card').forEach((el, i) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(15px)';
+        el.style.transition = `all 0.5s ease-out ${i*0.05}s`;
+    });
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; } });
+    }, {threshold:0.05});
+    document.querySelectorAll('.premium-card').forEach(el => observer.observe(el));
+
+    fetch('/api/watchlist').then(r=>r.json()).then(d => {
+        if (d.symbols) {
+            document.querySelectorAll('.wl-btn').forEach(btn => {
+                const wrapper = btn.closest('.symbol-card') || btn.parentElement?.closest('.symbol-card') || btn.closest('a');
+                if (!wrapper) return;
+                const card = wrapper.querySelector('[data-symbol]') || wrapper;
+                const sym = card.dataset.symbol;
+                if (sym && d.symbols.includes(sym)) { btn.classList.remove('text-gray-600'); btn.classList.add('text-yellow-400'); btn.title = 'Remove from watchlist'; }
+            });
+        }
+    });
+});
+
+async function toggleWatchlist(symbol, btn) {
+    const isStarred = btn.classList.contains('text-yellow-400');
+    if (isStarred) {
+        const res = await fetch('/api/watchlist/' + symbol, {method:'DELETE'});
+        const data = await res.json();
+        if (data.success) { btn.classList.remove('text-yellow-400'); btn.classList.add('text-gray-600'); btn.title = 'Add to watchlist'; }
+    } else {
+        const fd = new FormData(); fd.append('symbol', symbol);
+        const res = await fetch('/api/watchlist', {method:'POST', body:fd});
+        const data = await res.json();
+        if (data.symbols && data.symbols.includes(symbol)) { btn.classList.remove('text-gray-600'); btn.classList.add('text-yellow-400'); btn.title = 'Remove from watchlist'; }
+    }
+}
+</script>
+{% endblock %}

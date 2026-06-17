@@ -1,0 +1,454 @@
+{% extends "layout.html" %}
+{% block title %}{{ symbol }} — {{ type_info.name }} — Foundation Wealth{% endblock %}
+{% block content %}
+{% set msg = request.query_params.get('trade') %}
+{% if msg == 'success' %}
+<div class="fixed top-20 right-4 z-50 px-4 py-3 bg-green-600/20 border border-green-500/30 rounded-lg text-green-400 text-sm font-medium shadow-xl backdrop-blur-sm animate-fade-in">Trade executed successfully</div>
+{% elif msg == 'insufficient_balance' %}
+<div class="fixed top-20 right-4 z-50 px-4 py-3 bg-red-600/20 border border-red-500/30 rounded-lg text-red-400 text-sm font-medium shadow-xl backdrop-blur-sm animate-fade-in">Insufficient balance for this trade</div>
+{% elif msg == 'insufficient_holdings' %}
+<div class="fixed top-20 right-4 z-50 px-4 py-3 bg-red-600/20 border border-red-500/30 rounded-lg text-red-400 text-sm font-medium shadow-xl backdrop-blur-sm animate-fade-in">Not enough shares to sell</div>
+{% elif msg == 'error' %}
+<div class="fixed top-20 right-4 z-50 px-4 py-3 bg-red-600/20 border border-red-500/30 rounded-lg text-red-400 text-sm font-medium shadow-xl backdrop-blur-sm animate-fade-in">Trade failed. Please try again.</div>
+{% elif msg == 'kyc' %}
+<div class="fixed top-20 right-4 z-50 px-4 py-3 bg-amber-600/20 border border-amber-500/30 rounded-lg text-amber-400 text-sm font-medium shadow-xl backdrop-blur-sm animate-fade-in">KYC verification required to trade</div>
+{% endif %}
+
+<div class="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+            <a href="/invest/{{ asset_type }}" class="text-gray-500 hover:text-white transition p-1 -ml-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </a>
+            {% set sl = symbol_logos.get(symbol, {"path":"","color":"#666"}) %}
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:{{ sl.color }}15">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="{{ sl.color }}">{% if sl.path %}<path d="{{ sl.path }}"/>{% else %}<circle cx="12" cy="12" r="11" fill="none" stroke="{{ sl.color }}" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="12" font-weight="bold" fill="{{ sl.color }}">{{ symbol[0] }}</text>{% endif %}</svg>
+            </div>
+            <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-2xl font-bold text-white font-mono">{{ symbol }}</h1>
+                        <button id="wl-btn" onclick="toggleWatchlist('{{ symbol }}')" class="text-gray-600 hover:text-yellow-400 transition p-1" title="Add to watchlist"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg></button>
+                        <span class="{{ type_info.badge }} px-2 py-0.5 text-[10px] font-medium rounded-md">{{ type_info.name }}</span>
+                </div>
+                <p class="text-gray-500 text-sm">{{ type_info.name }} trading &middot; {{ symbol }}/USD</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+            <a href="/invest/{{ asset_type }}" class="px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-gray-500 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg> {{ type_info.name }}</a>
+            <a href="/invest" class="px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-gray-500 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg> All Markets</a>
+            {% if user %}
+            <a href="/wallet" class="px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-gray-500 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg> Wallet</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="decorative-line mb-6"></div>
+
+    {# Balance bar #}
+    {% if user %}
+    <div class="flex items-center justify-between p-4 bg-[#111118] border border-gray-800 rounded-xl mb-6">
+        <div class="flex items-center gap-4">
+            <div class="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500">Available Balance</p>
+                <p class="text-white font-mono font-bold text-lg">${{ "{:,.2f}".format(user.balance) }}</p>
+            </div>
+        </div>
+        <a href="/wallet" class="px-4 py-2 text-sm bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            Deposit Funds
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="grid lg:grid-cols-3 gap-6 mb-8">
+        <div class="lg:col-span-2 space-y-6">
+            {# Price card #}
+            <div class="p-5 sm:p-6 bg-[#111118] border border-gray-800 rounded-2xl premium-card premium-card-glow relative overflow-hidden">
+                <div class="ambient-orb w-60 h-60 bg-{{ type_info.color }}-500/5 -top-20 -right-20"></div>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <span class="text-gray-400 text-xs font-medium uppercase tracking-wider">{{ symbol }} / USD</span>
+                            <p class="text-white balance-hero font-bold font-mono mt-1 number-glow">${{ "{:,.2f}".format(price_data.price) }}</p>
+                        </div>
+                        <div class="px-3 py-2 rounded-lg {{ 'bg-green-500/10' if price_data.change_pct >= 0 else 'bg-red-500/10' }} border {{ 'border-green-500/20' if price_data.change_pct >= 0 else 'border-red-500/20' }}">
+                            <p class="text-sm font-mono font-semibold {{ 'text-green-400' if price_data.change_pct >= 0 else 'text-red-400' }}">
+                                <svg class="w-3 h-3 inline -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ 'M5 10l7-7m0 0l7 7m-7-7v18' if price_data.change_pct >= 0 else 'M19 14l-7 7m0 0l-7-7m7 7V3' }}"/></svg>
+                                {{ '+' if price_data.change_pct >= 0 }}{{ price_data.change_pct }}%
+                            </p>
+                            <p class="text-xs font-mono {{ 'text-green-500' if price_data.change >= 0 else 'text-red-500' }}">
+                                {{ '+' if price_data.change >= 0 }}${{ "{:,.2f}".format(price_data.change) }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                        <span class="text-green-400 text-xs font-mono">Live</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1 mb-3">
+                    <button class="tf-btn px-3 py-1 text-xs font-medium rounded-md transition bg-blue-600 text-white" data-range="1d">1D</button>
+                    <button class="tf-btn px-3 py-1 text-xs font-medium rounded-md transition text-gray-400 hover:text-white bg-[#0a0a0f] hover:bg-[#1a1a2e]" data-range="1w">1W</button>
+                    <button class="tf-btn px-3 py-1 text-xs font-medium rounded-md transition text-gray-400 hover:text-white bg-[#0a0a0f] hover:bg-[#1a1a2e]" data-range="1m">1M</button>
+                    <button class="tf-btn px-3 py-1 text-xs font-medium rounded-md transition text-gray-400 hover:text-white bg-[#0a0a0f] hover:bg-[#1a1a2e]" data-range="3m">3M</button>
+                    <button class="tf-btn px-3 py-1 text-xs font-medium rounded-md transition text-gray-400 hover:text-white bg-[#0a0a0f] hover:bg-[#1a1a2e]" data-range="1y">1Y</button>
+                </div>
+
+                <div class="relative">
+                    <canvas id="candleChart" height="240" class="w-full"></canvas>
+                    <div id="chartTooltip" class="absolute pointer-events-none transition-opacity duration-150 opacity-0" style="z-index:10">
+                        <div class="bg-[#0a0a0f]/95 border border-gray-700 rounded-lg px-3 py-2 shadow-xl backdrop-blur-sm min-w-[120px]">
+                            <p id="ttTime" class="text-gray-400 text-xs mb-1.5"></p>
+                            <div class="space-y-0.5 text-xs font-mono">
+                                <div class="flex justify-between gap-3"><span class="text-gray-500">Open</span><span id="ttOpen" class="text-white font-semibold"></span></div>
+                                <div class="flex justify-between gap-3"><span class="text-gray-500">High</span><span id="ttHigh" class="text-green-400 font-semibold"></span></div>
+                                <div class="flex justify-between gap-3"><span class="text-gray-500">Low</span><span id="ttLow" class="text-red-400 font-semibold"></span></div>
+                                <div class="flex justify-between gap-3"><span class="text-gray-500">Close</span><span id="ttClose" class="text-white font-semibold"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Related symbols #}
+            <div class="p-5 sm:p-6 bg-[#111118] border border-gray-800 rounded-2xl premium-card premium-card-glow relative overflow-hidden">
+                <div class="ambient-orb w-40 h-40 bg-{{ type_info.color }}-500/5 -top-20 -left-20"></div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="stat-icon bg-{{ type_info.color }}-500/15"><svg class="w-5 h-5 text-{{ type_info.color }}-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg></div>
+                    <h3 class="text-white font-semibold">Related {{ type_info.name }}</h3>
+                </div>
+                {% if related %}
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {% for s, p in related.items() %}
+                    <a href="/invest/{{ asset_type }}/{{ s }}" class="p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/50 hover:border-gray-600 transition premium-card relative overflow-hidden group">
+                        <div class="flex items-center justify-between mb-2">{% set rs = symbol_logos.get(s, {"path":"","color":"#666"}) %}
+                            <div class="flex items-center gap-2"><svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="{{ rs.color }}">{% if rs.path %}<path d="{{ rs.path }}"/>{% else %}<circle cx="12" cy="12" r="11" fill="none" stroke="{{ rs.color }}" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="{{ rs.color }}">{{ s[0] }}</text>{% endif %}</svg><p class="text-white font-mono text-sm font-semibold">{{ s }}</p></div>
+                            <svg class="w-3.5 h-3.5 text-gray-600 group-hover:text-blue-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                        <p class="text-white font-mono text-sm font-bold">${{ "{:,.2f}".format(p.price) }}</p>
+                        <p class="text-xs font-mono mt-1 flex items-center gap-1 {{ 'text-green-400' if p.change_pct >= 0 else 'text-red-400' }}">
+                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="{{ 'M5 10l7-7m0 0l7 7m-7-7v18' if p.change_pct >= 0 else 'M19 14l-7 7m0 0l-7-7m7 7V3' }}"/></svg>
+                            {{ '+' if p.change_pct >= 0 }}{{ p.change_pct }}%
+                        </p>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8"><svg class="w-12 h-12 text-gray-700 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg><p class="text-gray-500 text-sm">No related symbols</p></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="lg:col-span-1 space-y-6">
+            {# Position card #}
+            {% if position %}
+            <div class="p-5 sm:p-6 bg-[#111118] border border-gray-800 rounded-2xl premium-card premium-card-glow relative overflow-hidden">
+                <div class="ambient-orb w-40 h-40 bg-blue-500/5 -top-20 -right-20"></div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="stat-icon bg-blue-500/15"><svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
+                    <h3 class="text-white font-semibold">My Position</h3>
+                </div>
+                <div class="space-y-2.5">
+                    <div class="flex justify-between text-sm"><span class="text-gray-500">Quantity</span><span class="text-white font-mono font-bold">{{ position.quantity }}</span></div>
+                    <div class="flex justify-between text-sm"><span class="text-gray-500">Avg Price</span><span class="text-white font-mono">${{ "{:,.2f}".format(position.avg_price) }}</span></div>
+                    <div class="flex justify-between text-sm"><span class="text-gray-500">Current Value</span><span class="text-white font-mono">${{ "{:,.2f}".format(position.current_value) }}</span></div>
+                    <div class="pt-3 border-t border-gray-800">
+                        <div class="flex justify-between text-sm mb-1.5"><span class="text-gray-500">Unrealized P&L</span>
+                            <span class="font-mono font-bold {{ 'text-green-400' if position.unrealized_pl >= 0 else 'text-red-400' }}">
+                                {{ '+' if position.unrealized_pl >= 0 }}${{ "{:,.2f}".format(position.unrealized_pl) }}
+                                ({{ '+' if position.unrealized_pl_pct >= 0 }}{{ position.unrealized_pl_pct }}%)
+                            </span>
+                        </div>
+                        {% set pl_pct = position.unrealized_pl_pct|float %}
+                        {% if pl_pct < 0 %}
+                        {% set pl_bar = ((pl_pct + 100) / 200 * 100) %}
+                        {% else %}
+                        {% set pl_bar = 50 %}
+                        {% endif %}
+                        {% if pl_bar < 2 %}{% set pl_bar = 2 %}{% endif %}
+                        {% if pl_bar > 98 %}{% set pl_bar = 98 %}{% endif %}
+                        <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500 {{ 'bg-green-500' if position.unrealized_pl >= 0 else 'bg-red-500' }}" style="width:{{ pl_bar }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {# Trade card #}
+            {% if user and user.role != 'admin' and user.kyc_status == 'verified' %}
+            <div class="p-5 sm:p-6 bg-[#111118] border border-gray-800 rounded-2xl premium-card premium-card-glow relative overflow-hidden">
+                <div class="ambient-orb w-40 h-40 bg-blue-500/5 -top-20 -right-20"></div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="stat-icon bg-blue-500/15"><svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+                    <h3 class="text-white font-semibold">Quick Trade</h3>
+                </div>
+
+                <form method="POST" action="/api/trades" class="space-y-3">
+                    <input type="hidden" name="symbol" value="{{ symbol }}">
+                    <input type="hidden" name="do_redirect" value="1">
+
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 font-medium">Side</label>
+                        <select name="side" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none">
+                            <option value="buy">Buy / Long</option>
+                            <option value="sell">Sell / Short</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 font-medium">Order Type</label>
+                        <select name="trade_type" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none">
+                            <option value="market">Market</option>
+                            <option value="limit">Limit</option>
+                            <option value="stop">Stop</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 font-medium">Quantity</label>
+                        <input type="number" name="quantity" placeholder="0.00" step="any" min="0.01" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 font-medium">Price <span class="text-gray-600">(optional, uses market price if blank)</span></label>
+                        <input type="number" name="price" placeholder="0.00" step="0.01" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none">
+                    </div>
+
+                    <div class="flex items-center justify-between px-3 py-2 bg-[#0a0a0f] rounded-lg border border-gray-800">
+                        <span class="text-xs text-gray-500">Balance after trade</span>
+                        <span id="balanceAfter" class="text-sm font-mono text-white font-semibold">${{ "{:,.2f}".format(user.balance) }}</span>
+                    </div>
+
+                    <button type="submit" class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition text-sm flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        Execute Trade
+                    </button>
+                </form>
+
+                <div class="mt-4 pt-4 border-t border-gray-800 grid grid-cols-2 gap-3">
+                    <div class="text-center p-2.5 bg-[#0a0a0f] rounded-lg">
+                        <p class="text-[10px] text-gray-500 flex items-center justify-center gap-1 mb-1"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg> 24h Volume</p>
+                        <p class="text-white font-mono text-xs font-bold">${{ "{:,.0f}".format((price_data.price * 50000)|int) }}</p>
+                    </div>
+                    <div class="text-center p-2.5 bg-[#0a0a0f] rounded-lg">
+                        <p class="text-[10px] text-gray-500 flex items-center justify-center gap-1 mb-1"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Day Range</p>
+                        <p class="text-white font-mono text-xs font-bold">${{ "{:,.2f}".format(price_data.price * 0.98) }} – ${{ "{:,.2f}".format(price_data.price * 1.02) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {% elif user and user.kyc_status != 'verified' %}
+            <div class="p-5 sm:p-6 bg-[#111118] border border-gray-800 rounded-2xl premium-card premium-card-glow relative overflow-hidden text-center">
+                <div class="ambient-orb w-40 h-40 bg-amber-500/5 -top-20 -right-20"></div>
+                <div class="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m9.364-7.364A9 9 0 1112 3a9 9 0 017.364 4.636z"/></svg>
+                </div>
+                <h3 class="text-white font-semibold mb-1">KYC Required</h3>
+                <p class="text-gray-500 text-sm mb-3">Verify your identity to start trading</p>
+                <a href="/dashboard" class="inline-block px-4 py-2 bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 rounded-lg text-sm transition">Complete KYC</a>
+            </div>
+            {% endif %}
+
+            {# Wallet link card #}
+            {% if user %}
+            <a href="/wallet" class="block p-4 bg-[#111118] border border-gray-800 rounded-xl hover:border-gray-600 transition group">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition">
+                            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-white text-sm font-medium">Wallet</p>
+                            <p class="text-gray-500 text-xs">Manage deposits &amp; view history</p>
+                        </div>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-600 group-hover:text-blue-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+            <a href="/dashboard" class="block p-4 bg-[#111118] border border-gray-800 rounded-xl hover:border-gray-600 transition group">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition">
+                            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-white text-sm font-medium">Portfolio</p>
+                            <p class="text-gray-500 text-xs">View your positions &amp; performance</p>
+                        </div>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-600 group-hover:text-blue-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+const candleData = {{ candle_data | tojson }};
+var currentRange = '1d';
+
+function computeSMA(data, period) {
+    const result = [];
+    for (let i = 0; i < data.length; i++) {
+        if (i < period - 1) { result.push(null); continue; }
+        let sum = 0;
+        for (let j = i - period + 1; j <= i; j++) sum += data[j].c;
+        result.push(sum / period);
+    }
+    return result;
+}
+
+function drawCandles(data) {
+    const canvas = document.getElementById('candleChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const W = rect.width * dpr; canvas.width = W;
+    const H = 240 * dpr; canvas.height = H;
+    ctx.scale(dpr, dpr);
+    const w = rect.width, h = 240;
+    ctx.clearRect(0, 0, w, h);
+    if (!data || data.length < 2) { ctx.fillStyle = '#555'; ctx.font = '14px Inter'; ctx.textAlign = 'center'; ctx.fillText('No data', w/2, h/2); return; }
+    const pad = {t: 20, b: 28, l: 56, r: 16};
+    const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+    let min = Infinity, max = -Infinity;
+    data.forEach(d => { if (d.l < min) min = d.l; if (d.h > max) max = d.h; });
+    const range = max - min || 1;
+    const padRange = range * 0.1;
+    min -= padRange; max += padRange;
+    const yr = max - min || 1;
+    function y(v) { return pad.t + ch - ((v - min) / yr) * ch; }
+    function x(i) { return pad.l + (i / data.length) * cw; }
+    ctx.strokeStyle = '#1a1a2e'; ctx.lineWidth = 0.5;
+    for (let p = 0.25; p <= 0.75; p += 0.25) { ctx.beginPath(); ctx.moveTo(pad.l, y(min + yr * p)); ctx.lineTo(w - pad.r, y(min + yr * p)); ctx.stroke(); }
+    function fmtPrice(v) { if (v >= 1000) return '$' + v.toFixed(0); if (v >= 1) return '$' + v.toFixed(2); return '$' + v.toFixed(4); }
+    ctx.fillStyle = '#555'; ctx.font = '9px Inter'; ctx.textAlign = 'right';
+    ctx.fillText(fmtPrice(max), pad.l - 4, y(max) + 3);
+    ctx.fillText(fmtPrice((max + min) / 2), pad.l - 4, y((max + min) / 2) + 3);
+    ctx.fillText(fmtPrice(min), pad.l - 4, y(min) + 3);
+    const candleW = Math.max(1, Math.min(10, (cw / data.length) * 0.5));
+    data.forEach((d, i) => {
+        const cx = x(i); const isUp = d.c >= d.o; const color = isUp ? '#34d399' : '#f87171';
+        ctx.strokeStyle = color; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(cx, y(d.h)); ctx.lineTo(cx, y(d.l)); ctx.stroke();
+        const top = y(Math.max(d.o, d.c)); const bottom = y(Math.min(d.o, d.c));
+        const hgt = Math.max(bottom - top, 1);
+        ctx.fillStyle = color; ctx.fillRect(cx - candleW / 2, top, candleW, hgt);
+    });
+    const sma7 = computeSMA(data, 7); const sma25 = computeSMA(data, 25);
+    function drawSMA(sma, color, label) {
+        const points = []; sma.forEach((v, i) => { if (v !== null) points.push({x: x(i), y: y(v)}); });
+        if (points.length < 2) return;
+        ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+        ctx.stroke(); ctx.fillStyle = color; ctx.font = '9px Inter'; ctx.textAlign = 'left';
+        ctx.fillText(label, points[points.length - 1].x + 3, points[points.length - 1].y + 3);
+    }
+    drawSMA(sma7, '#60a5fa', 'SMA 7'); drawSMA(sma25, '#a78bfa', 'SMA 25');
+    const last = data[data.length - 1];
+    const lcx = x(data.length - 1); const lcy = y(last.c);
+    const lastColor = last.c >= last.o ? '#34d399' : '#f87171';
+    ctx.beginPath(); ctx.arc(lcx, lcy, 4, 0, Math.PI * 2); ctx.fillStyle = lastColor; ctx.fill();
+    ctx.beginPath(); ctx.arc(lcx, lcy, 2, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.fillStyle = '#666'; ctx.font = '9px Inter'; ctx.textAlign = 'center';
+    const step = Math.max(1, Math.floor(data.length / 5));
+    for (let i = 0; i < data.length; i += step) ctx.fillText('' + (i + 1), x(i), h - 4);
+    window._candleCtx = { data, pad, w, h, cw, ch, min, max, yr, y, x, fmtPrice };
+}
+
+function switchTimeframe(range) {
+    currentRange = range;
+    document.querySelectorAll('.tf-btn').forEach(btn => {
+        btn.className = btn.dataset.range === range
+            ? 'tf-btn px-3 py-1 text-xs font-medium rounded-md transition bg-blue-600 text-white'
+            : 'tf-btn px-3 py-1 text-xs font-medium rounded-md transition text-gray-400 hover:text-white bg-[#0a0a0f] hover:bg-[#1a1a2e]';
+    });
+    drawCandles(candleData[range] || []);
+}
+
+let inWatchlist = false;
+async function toggleWatchlist(symbol) {
+    const btn = document.getElementById('wl-btn');
+    if (inWatchlist) {
+        const res = await fetch('/api/watchlist/' + symbol, {method:'DELETE'});
+        const data = await res.json();
+        if (data.success) { inWatchlist = false; btn.classList.remove('text-yellow-400'); btn.classList.add('text-gray-600'); btn.title = 'Add to watchlist'; }
+    } else {
+        const fd = new FormData(); fd.append('symbol', symbol);
+        const res = await fetch('/api/watchlist', {method:'POST', body:fd});
+        const data = await res.json();
+        if (data.symbols && data.symbols.includes(symbol)) { inWatchlist = true; btn.classList.remove('text-gray-600'); btn.classList.add('text-yellow-400'); btn.title = 'Remove from watchlist'; }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/watchlist').then(r=>r.json()).then(d => {
+        if (d.symbols && d.symbols.includes('{{ symbol }}')) {
+            inWatchlist = true;
+            const btn = document.getElementById('wl-btn');
+            btn.classList.remove('text-gray-600');
+            btn.classList.add('text-yellow-400');
+            btn.title = 'Remove from watchlist';
+        }
+    });
+    try { if (candleData && candleData['1d']) switchTimeframe('1d'); } catch(e) {}
+    try {
+        document.querySelectorAll('.tf-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchTimeframe(btn.dataset.range));
+        });
+    } catch(e) {}
+    try {
+        const canvas = document.getElementById('candleChart');
+        if (canvas) {
+            const tooltip = document.getElementById('chartTooltip');
+            const ttTime = document.getElementById('ttTime');
+            const ttOpen = document.getElementById('ttOpen');
+            const ttHigh = document.getElementById('ttHigh');
+            const ttLow = document.getElementById('ttLow');
+            const ttClose = document.getElementById('ttClose');
+            let crosshairOverlay = null;
+            canvas.addEventListener('mousemove', (e) => {
+                const ctx = window._candleCtx;
+                if (!ctx) return;
+                const { data, pad, w, h, cw, ch, min, max, yr, y: yf, x: xf, fmtPrice } = ctx;
+                if (!data || data.length < 2) return;
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+                if (mx < pad.l || mx > w - pad.r || my < pad.t || my > h - pad.b) { tooltip.classList.add('opacity-0'); if (crosshairOverlay) { crosshairOverlay.remove(); crosshairOverlay = null; } return; }
+                const di = Math.round((mx - pad.l) / cw * (data.length - 1));
+                const d = data[Math.max(0, Math.min(data.length - 1, di))];
+                tooltip.classList.remove('opacity-0');
+                ttTime.textContent = 'Period ' + (di + 1); ttOpen.textContent = fmtPrice(d.o);
+                ttHigh.textContent = fmtPrice(d.h); ttLow.textContent = fmtPrice(d.l); ttClose.textContent = fmtPrice(d.c);
+                tooltip.style.left = Math.min(mx + 16, w - 140) + 'px'; tooltip.style.top = Math.max(my - 100, 4) + 'px';
+                if (!crosshairOverlay) { crosshairOverlay = document.createElement('canvas'); crosshairOverlay.className = 'absolute inset-0 pointer-events-none'; canvas.parentElement.appendChild(crosshairOverlay); }
+                const dpr = window.devicePixelRatio || 1;
+                crosshairOverlay.width = w * dpr; crosshairOverlay.height = h * dpr;
+                crosshairOverlay.style.width = w + 'px'; crosshairOverlay.style.height = h + 'px';
+                const ox = crosshairOverlay.getContext('2d'); ox.scale(dpr, dpr); ox.clearRect(0, 0, w, h);
+                const cx = xf(di); const cy = yf(d.c);
+                ox.strokeStyle = 'rgba(148,163,184,0.3)'; ox.lineWidth = 0.5; ox.setLineDash([3, 3]);
+                ox.beginPath(); ox.moveTo(cx, pad.t); ox.lineTo(cx, h - pad.b); ox.stroke();
+                ox.beginPath(); ox.moveTo(pad.l, cy); ox.lineTo(w - pad.r, cy); ox.stroke(); ox.setLineDash([]);
+                ox.beginPath(); ox.arc(cx, cy, 3, 0, Math.PI * 2); ox.fillStyle = d.c >= d.o ? '#34d399' : '#f87171'; ox.fill();
+                ox.beginPath(); ox.arc(cx, cy, 1.5, 0, Math.PI * 2); ox.fillStyle = '#fff'; ox.fill();
+            });
+            canvas.addEventListener('mouseleave', () => { tooltip.classList.add('opacity-0'); if (crosshairOverlay) { crosshairOverlay.remove(); crosshairOverlay = null; } });
+        }
+    } catch(e) {}
+    try {
+        let resizeTimer;
+        window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => drawCandles(candleData[currentRange] || []), 150); });
+    } catch(e) {}
+});
+</script>
+{% endblock %}

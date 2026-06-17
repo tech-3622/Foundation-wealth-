@@ -1,0 +1,189 @@
+{% extends "layout.html" %}
+{% block title %}Verify Email — Foundation Wealth{% endblock %}
+{% block content %}
+<style>
+    @keyframes floatGlow { 0%,100% { box-shadow: 0 0 30px rgba(37,99,235,0.2); } 50% { box-shadow: 0 0 60px rgba(37,99,235,0.4); } }
+    .code-input { width: 48px; height: 56px; text-align: center; font-size: 24px; font-weight: 700; font-family: 'JetBrains Mono', monospace; background: #0a0a0f; border: 2px solid #1a1a2e; border-radius: 12px; color: #60a5fa; outline: none; transition: all 0.2s; }
+    .code-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+    .code-input.filled { border-color: #2563eb; background: #0d0d1a; }
+</style>
+
+<div class="min-h-screen pt-16 flex items-center justify-center px-4" style="background: radial-gradient(ellipse at 50% 0%, rgba(37,99,235,0.06) 0%, transparent 60%), #0a0a0f;">
+    <div class="w-full max-w-md" style="animation: fadeInUp 0.6s ease-out 0.1s both;">
+        <div class="bg-[#111118]/90 backdrop-blur-xl border border-gray-800 rounded-2xl p-6 sm:p-8 shadow-2xl text-center">
+            <div class="w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl mx-auto mb-4 shadow-lg shadow-blue-500/20">FW</div>
+            <h1 class="text-2xl font-bold text-white mb-2">Verify Your Email</h1>
+            <p class="text-gray-400 text-sm mb-2">We sent a 6-digit code to</p>
+            <p class="text-blue-400 font-mono font-semibold text-sm mb-6" id="email-display">{{ email }}</p>
+
+            <form id="verify-form" method="POST" action="/api/auth/verify">
+                <input type="hidden" name="email" value="{{ email }}">
+                <input type="hidden" name="code" id="code-hidden">
+
+                <div class="flex items-center justify-center gap-2 sm:gap-3 mb-6" id="code-inputs">
+                    {% for i in range(6) %}
+                    <input type="text" maxlength="1" class="code-input digit-input" data-idx="{{ i }}" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+                    {% endfor %}
+                </div>
+
+                <div id="verify-error" class="hidden mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"></div>
+
+                <button type="submit" id="verify-btn" class="w-full px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 glow text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Verify Account
+                </button>
+            </form>
+
+            <div class="mt-6 pt-4 border-t border-gray-800">
+                <p class="text-gray-500 text-xs mb-3" id="timer-text">Code expires in <span id="timer" class="text-yellow-400 font-mono">15:00</span></p>
+                <form id="resend-form" method="POST" action="/api/auth/resend-code">
+                    <input type="hidden" name="email" value="{{ email }}">
+                    <button type="submit" id="resend-btn" class="text-sm text-blue-400 hover:text-blue-300 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed" disabled>Resend Code</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center" id="email-fallback" style="animation: fadeIn 0.6s ease-out 0.5s both;">
+            <p class="text-gray-600 text-xs">Didn't receive the email?</p>
+            <div class="mt-2 space-y-2">
+                <button onclick="showFallbackCode()" class="text-xs text-yellow-400 hover:text-yellow-300 underline">Troubleshoot</button>
+                <div id="fallback-code" class="hidden p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg">
+                    <p class="text-yellow-400 text-xs font-medium mb-1">Email delivery issue — your code is below:</p>
+                    <p id="fallback-code-value" class="text-2xl font-bold text-white font-mono tracking-widest">......</p>
+                    <p class="text-gray-600 text-xs mt-1">This is a development fallback. In production, codes are sent via email.</p>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-center text-gray-600 text-xs mt-6" style="animation: fadeIn 0.6s ease-out 0.4s both;">
+            Wrong email? <a href="/register" class="text-blue-400 hover:text-blue-300">Create a new account</a>
+        </p>
+    </div>
+</div>
+
+<script>
+const inputs = document.querySelectorAll('.digit-input');
+const hidden = document.getElementById('code-hidden');
+const verifyBtn = document.getElementById('verify-btn');
+const errorDiv = document.getElementById('verify-error');
+const form = document.getElementById('verify-form');
+const resendForm = document.getElementById('resend-form');
+
+inputs.forEach((input, idx) => {
+    input.addEventListener('input', (e) => {
+        const val = e.target.value.replace(/[^0-9]/g, '');
+        e.target.value = val;
+        if (val) {
+            e.target.classList.add('filled');
+            if (idx < inputs.length - 1) inputs[idx + 1].focus();
+        } else {
+            e.target.classList.remove('filled');
+        }
+        updateCode();
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+            inputs[idx - 1].focus();
+            inputs[idx - 1].value = '';
+            inputs[idx - 1].classList.remove('filled');
+            updateCode();
+        }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (!verifyBtn.disabled) form.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    input.addEventListener('focus', () => input.select());
+});
+
+function updateCode() {
+    const code = Array.from(inputs).map(i => i.value).join('');
+    hidden.value = code;
+    verifyBtn.disabled = code.length !== 6;
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = 'Verifying...';
+    errorDiv.classList.add('hidden');
+
+    const formData = new FormData(form);
+    try {
+        const res = await fetch('/api/auth/verify', { method: 'POST', body: formData });
+        if (res.redirected) {
+            window.location.href = res.url;
+        } else {
+            const data = await res.json();
+            errorDiv.textContent = data.error || 'Verification failed';
+            errorDiv.classList.remove('hidden');
+            inputs.forEach(i => { i.value = ''; i.classList.remove('filled'); });
+            inputs[0].focus();
+            updateCode();
+        }
+    } catch (err) {
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.classList.remove('hidden');
+    }
+    verifyBtn.disabled = false;
+    verifyBtn.textContent = 'Verify Account';
+});
+
+resendForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('resend-btn');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    const formData = new FormData(resendForm);
+    await fetch('/api/auth/resend-code', { method: 'POST', body: formData });
+    btn.textContent = 'Code Sent!';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Resend Code'; }, 30000);
+    startTimer(900);
+});
+
+let timerInterval;
+function startTimer(seconds) {
+    clearInterval(timerInterval);
+    const timer = document.getElementById('timer');
+    let remaining = seconds;
+    timerInterval = setInterval(() => {
+        remaining--;
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        timer.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        if (remaining <= 0) {
+            clearInterval(timerInterval);
+            document.getElementById('resend-btn').disabled = false;
+        }
+    }, 1000);
+}
+startTimer(900);
+
+setTimeout(() => {
+    inputs[0].focus();
+}, 500);
+
+function showFallbackCode() {
+    const div = document.getElementById('fallback-code');
+    const codeSpan = document.getElementById('fallback-code-value');
+    if (div.classList.contains('hidden')) {
+        div.classList.remove('hidden');
+        const email = document.querySelector('input[name="email"]').value;
+        fetch('/dev/verify-code?email=' + encodeURIComponent(email))
+            .then(r => r.text())
+            .then(html => {
+                const match = html.match(/(\d{6})/);
+                if (match) {
+                    codeSpan.textContent = match[1];
+                } else {
+                    codeSpan.textContent = 'No code found. Try resending.';
+                }
+            })
+            .catch(() => { codeSpan.textContent = 'Error fetching code'; });
+    } else {
+        div.classList.add('hidden');
+    }
+}
+</script>
+{% endblock %}

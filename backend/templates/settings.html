@@ -1,0 +1,210 @@
+{% extends "layout.html" %}
+{% block title %}Settings - Foundation Wealth{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-[#0a0a0f]">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <div class="mb-8">
+            <h1 class="text-2xl sm:text-3xl font-bold text-white">Settings</h1>
+            <p class="text-gray-500 text-sm mt-1">Manage your account preferences</p>
+        </div>
+
+        <div id="settings-msg" class="hidden p-3 rounded-lg text-sm mb-4"></div>
+
+        <div class="p-0.5 bg-gradient-to-br from-blue-500/20 via-transparent to-purple-500/20 rounded-xl premium-card mb-6">
+            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
+                <h3 class="text-white font-semibold mb-4">Notification Preferences</h3>
+                <form id="notif-form" class="space-y-3">
+                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">Trade Confirmations</p><p class="text-gray-500 text-xs">Get notified when a trade is executed</p></div><input type="checkbox" name="trade_confirmations" class="w-4 h-4 rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-800"></label>
+                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">Price Alerts</p><p class="text-gray-500 text-xs">When watched symbols hit your targets</p></div><input type="checkbox" name="price_alerts" class="w-4 h-4 rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-800"></label>
+                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">KYC Updates</p><p class="text-gray-500 text-xs">When your verification status changes</p></div><input type="checkbox" name="kyc_updates" class="w-4 h-4 rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-800"></label>
+                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">Marketing &amp; Offers</p><p class="text-gray-500 text-xs">Product updates and promotions</p></div><input type="checkbox" name="marketing" class="w-4 h-4 rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-800"></label>
+                    <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-blue-500/20">Save Preferences</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="p-0.5 bg-gradient-to-br from-violet-500/20 via-transparent to-violet-500/10 rounded-xl premium-card mb-6">
+            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-white font-semibold">Two-Factor Authentication</h3>
+                    <span id="2fa-status-badge" class="text-xs px-2.5 py-1 rounded-full bg-gray-500/10 text-gray-400 font-medium">Loading...</span>
+                </div>
+                <p class="text-gray-500 text-sm mb-4">Add an extra layer of security to your account using a TOTP authenticator app.</p>
+
+                <div id="2fa-setup-section">
+                    <div id="2fa-setup-step1">
+                        <button id="btn-setup-2fa" class="px-5 py-2.5 bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-violet-500/20">Enable 2FA</button>
+                    </div>
+                    <div id="2fa-setup-step2" class="hidden space-y-4">
+                        <div class="p-4 bg-[#0a0a0f] rounded-xl border border-gray-800/50">
+                            <p class="text-gray-400 text-xs mb-2">Scan this QR code in your authenticator app, or enter the secret manually:</p>
+                            <div class="flex justify-center mb-4">
+                                <div id="2fa-qr-container" class="bg-white p-3 rounded-lg inline-block"></div>
+                            </div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <code id="2fa-secret" class="text-blue-400 text-xs font-mono bg-[#111118] px-3 py-2 rounded-lg select-all flex-1 text-center break-all"></code>
+                                <button onclick="copySecret()" class="px-3 py-2 bg-[#111118] border border-gray-700 rounded-lg text-gray-400 text-xs hover:text-white transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></button>
+                            </div>
+                            <p class="text-gray-500 text-xs">Enter the 6-digit code from your authenticator app to enable 2FA:</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <input id="2fa-token" type="text" placeholder="000000" maxlength="6" class="w-36 px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-mono text-center text-2xl tracking-widest focus:border-violet-500 outline-none transition">
+                            <button id="btn-verify-2fa" class="px-5 py-2.5 bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-violet-500/20">Verify</button>
+                            <button id="btn-cancel-2fa" class="px-4 py-2.5 bg-[#111118] border border-gray-700 text-gray-400 rounded-lg text-sm hover:text-white transition">Cancel</button>
+                        </div>
+                        <div id="2fa-error" class="hidden text-red-400 text-xs"></div>
+                    </div>
+                </div>
+
+                <div id="2fa-disable-section" class="hidden space-y-3">
+                    <p class="text-green-400 text-sm font-medium flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> 2FA is active</p>
+                    <button id="btn-disable-2fa" class="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg text-sm hover:bg-red-500/20 transition">Disable 2FA</button>
+                    <div id="2fa-disable-form" class="hidden space-y-3 p-4 bg-[#0a0a0f] rounded-xl border border-red-500/20">
+                        <p class="text-red-400 text-xs font-medium">Enter your password to disable 2FA:</p>
+                        <div class="flex gap-3">
+                            <input id="2fa-disable-pw" type="password" placeholder="Current password" class="w-56 px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-red-500 outline-none transition">
+                            <button id="btn-confirm-disable-2fa" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition">Confirm</button>
+                        </div>
+                        <div id="2fa-disable-error" class="hidden text-red-400 text-xs"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-0.5 bg-gradient-to-br from-yellow-500/20 via-transparent to-amber-500/20 rounded-xl premium-card mb-6">
+            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-white font-semibold">App Passwords</h3>
+                    <button onclick="document.getElementById('app-pw-form').classList.toggle('hidden')" class="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transition flex items-center gap-1 shadow-lg shadow-blue-500/20"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Generate</button>
+                </div>
+                <div id="app-pw-result" class="hidden mb-4 p-4 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-xl"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/10 flex items-center justify-center shrink-0"><svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div><div><p class="text-yellow-400 text-sm font-semibold">App Password Generated</p><p id="app-pw-value" class="text-white font-mono text-base sm:text-lg mt-1 select-all bg-[#0a0a0f] px-3 py-2 rounded-lg"></p></div></div><p class="text-gray-500 text-xs mt-2 ml-13">Save this now. You won't be able to see it again.</p></div>
+                <form id="app-pw-form" class="hidden space-y-3 mb-4 p-4 bg-[#0a0a0f] rounded-xl border border-gray-800/50"><div class="flex gap-3 items-end"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1.5 font-medium">Name</label><input type="text" name="name" placeholder="e.g. TradingView, API Bot" required class="w-full px-3 py-2.5 bg-[#111118] border border-gray-700 rounded-lg text-white text-sm focus:border-yellow-500 outline-none transition"></div><button type="submit" class="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-lg text-sm font-semibold transition shadow-lg shadow-blue-500/20 whitespace-nowrap">Generate</button></div></form>
+                {% if app_passwords %}
+                <div class="space-y-2">{% for ap in app_passwords %}<div class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30"><div><p class="text-white text-sm font-medium">{{ ap.name }}</p><p class="text-gray-600 text-xs">Created {{ ap.created_at.strftime('%b %d, %Y') if ap.created_at else '--' }}</p></div><span class="text-xs px-2 py-0.5 rounded-full bg-gray-500/10 text-gray-400">Active</span></div>{% endfor %}</div>
+                {% else %}<p class="text-gray-600 text-sm">No app passwords yet.</p>{% endif %}
+            </div>
+        </div>
+
+        <div class="p-0.5 bg-gradient-to-br from-red-500/20 via-transparent to-red-500/10 rounded-xl premium-card">
+            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
+                <h3 class="text-white font-semibold mb-2 text-red-400">Danger Zone</h3>
+                <p class="text-gray-500 text-sm mb-4">Permanently delete your account and all associated data. This action cannot be undone.</p>
+                <button onclick="document.getElementById('delete-form').classList.toggle('hidden')" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-red-500/20">Delete Account</button>
+                <div id="delete-form" class="hidden mt-4 p-4 bg-[#0a0a0f] rounded-xl border border-red-500/20 space-y-3">
+                    <p class="text-red-400 text-xs font-medium">Enter your password to confirm deletion:</p>
+                    <div class="flex gap-3">
+                        <input id="delete-pw" type="password" placeholder="Current password" class="w-56 px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-red-500 outline-none transition">
+                        <button id="btn-confirm-delete" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition">Confirm Delete</button>
+                    </div>
+                    <div id="delete-error" class="hidden text-red-400 text-xs"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const showMsg = (msg, ok) => {
+        const el = document.getElementById('settings-msg');
+        el.textContent = msg; el.className = 'hidden p-3 rounded-lg text-sm mb-4';
+        if (ok === true) el.className = 'p-3 rounded-lg text-sm mb-4 bg-green-500/10 text-green-400 border border-green-500/20';
+        else if (ok === false) el.className = 'p-3 rounded-lg text-sm mb-4 bg-red-500/10 text-red-400 border border-red-500/20';
+        el.classList.remove('hidden');
+        setTimeout(() => el.classList.add('hidden'), 3000);
+    };
+
+    fetch('/api/user/settings').then(r=>r.json()).then(d => {
+        const prefs = d.notifications || {};
+        document.querySelectorAll('#notif-form input[type=checkbox]').forEach(cb => {
+            cb.checked = prefs[cb.name] === true;
+        });
+        const badge = document.getElementById('2fa-status-badge');
+        if (d.two_factor_enabled) {
+            badge.textContent = 'Enabled';
+            badge.className = 'text-xs px-2.5 py-1 rounded-full bg-green-500/10 text-green-400 font-medium';
+            document.getElementById('2fa-setup-section').classList.add('hidden');
+            document.getElementById('2fa-disable-section').classList.remove('hidden');
+        } else {
+            badge.textContent = 'Disabled';
+            badge.className = 'text-xs px-2.5 py-1 rounded-full bg-gray-500/10 text-gray-400 font-medium';
+        }
+    });
+
+    document.getElementById('notif-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData();
+        document.querySelectorAll('#notif-form input[type=checkbox]').forEach(cb => { fd.append(cb.name, cb.checked ? '1' : '0'); });
+        const res = await fetch('/api/user/settings', {method:'PUT', body:fd});
+        const data = await res.json();
+        showMsg(data.error || data.message || 'Saved', !data.error);
+    });
+
+    document.getElementById('btn-setup-2fa')?.addEventListener('click', async () => {
+        const res = await fetch('/api/auth/2fa/setup', {method:'POST'});
+        const data = await res.json();
+        if (data.uri) {
+            document.getElementById('2fa-secret').textContent = data.secret;
+            document.getElementById('2fa-setup-step1').classList.add('hidden');
+            document.getElementById('2fa-setup-step2').classList.remove('hidden');
+            const qr = document.getElementById('2fa-qr-container');
+            qr.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.uri)}" alt="QR Code" class="w-48 h-48 mx-auto rounded">`;
+        }
+    });
+
+    document.getElementById('btn-verify-2fa')?.addEventListener('click', async () => {
+        const token = document.getElementById('2fa-token').value.trim();
+        if (!token || token.length !== 6) { document.getElementById('2fa-error').textContent = 'Enter a 6-digit code'; document.getElementById('2fa-error').classList.remove('hidden'); return; }
+        const fd = new FormData(); fd.append('token', token);
+        const res = await fetch('/api/auth/2fa/verify', {method:'POST', body:fd});
+        const data = await res.json();
+        if (data.error) { document.getElementById('2fa-error').textContent = data.error; document.getElementById('2fa-error').classList.remove('hidden'); return; }
+        location.reload();
+    });
+
+    document.getElementById('btn-cancel-2fa')?.addEventListener('click', () => { location.reload(); });
+
+    document.getElementById('btn-disable-2fa')?.addEventListener('click', () => { document.getElementById('2fa-disable-form').classList.toggle('hidden'); });
+
+    document.getElementById('btn-confirm-disable-2fa')?.addEventListener('click', async () => {
+        const pw = document.getElementById('2fa-disable-pw').value;
+        if (!pw) { document.getElementById('2fa-disable-error').textContent = 'Enter your password'; document.getElementById('2fa-disable-error').classList.remove('hidden'); return; }
+        const fd = new FormData(); fd.append('password', pw);
+        const res = await fetch('/api/auth/2fa/disable', {method:'POST', body:fd});
+        const data = await res.json();
+        if (data.error) { document.getElementById('2fa-disable-error').textContent = data.error; document.getElementById('2fa-disable-error').classList.remove('hidden'); return; }
+        location.reload();
+    });
+
+    document.getElementById('btn-confirm-delete')?.addEventListener('click', async () => {
+        const pw = document.getElementById('delete-pw').value;
+        if (!pw) { document.getElementById('delete-error').textContent = 'Enter your password'; document.getElementById('delete-error').classList.remove('hidden'); return; }
+        if (!confirm('Are you absolutely sure? This will permanently delete your account and all data.')) return;
+        const fd = new FormData(); fd.append('password', pw);
+        const res = await fetch('/api/user/delete', {method:'POST', body:fd});
+        const data = await res.json();
+        if (data.error) { document.getElementById('delete-error').textContent = data.error; document.getElementById('delete-error').classList.remove('hidden'); return; }
+        window.location.href = '/';
+    });
+
+    const pwForm = document.getElementById('app-pw-form');
+    if (pwForm) {
+        pwForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(pwForm);
+            const res = await fetch('/api/auth/app-password', {method:'POST', body:fd});
+            const data = await res.json();
+            document.getElementById('app-pw-value').textContent = data.password || (data.detail || 'Error');
+            document.getElementById('app-pw-result').classList.remove('hidden');
+        });
+    }
+});
+
+function copySecret() {
+    const s = document.getElementById('2fa-secret');
+    navigator.clipboard.writeText(s.textContent).catch(() => {});
+    s.textContent = 'Copied!';
+    setTimeout(() => { s.textContent = document.getElementById('2fa-secret').getAttribute('data-orig') || s.textContent; }, 2000);
+}
+</script>
+{% endblock %}

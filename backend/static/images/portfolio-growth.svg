@@ -1,0 +1,33 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="growGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#34d399" stop-opacity="0.25"/><stop offset="100%" stop-color="#34d399" stop-opacity="0"/></linearGradient>
+    <filter id="gglow"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <rect width="400" height="300" rx="12" fill="#0f0f1a" stroke="#1a1a2e" stroke-width="1"/>
+  <text x="24" y="32" font-family="Inter,sans-serif" font-weight="600" font-size="13" fill="#fff">Portfolio Growth</text>
+  <text x="24" y="48" font-family="Inter,sans-serif" font-size="10" fill="#34d399">▲ +47.8% YTD</text>
+  <rect x="24" y="60" width="352" height="1" fill="#1a1a2e"/>
+  <rect x="40" y="80" width="320" height="180" rx="0" fill="none"/>
+  <rect x="40" y="80" width="320" height="180" fill="url(#growGrad)" opacity="0.5"/>
+  <path d="M40 260 L70 250 L100 240 L130 230 L160 215 L190 200 L220 180 L250 160 L280 140 L310 120 L340 100 L360 85" stroke="#34d399" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#gglow)"/>
+  <path d="M40 260 L70 250 L100 240 L130 230 L160 215 L190 200 L220 180 L250 160 L280 140 L310 120 L340 100 L360 85" fill="url(#growGrad)"/>
+  <circle cx="360" cy="85" r="6" fill="#34d399" filter="url(#gglow)"/>
+  <circle cx="360" cy="85" r="3" fill="#fff"/>
+  <rect x="130" y="140" width="60" height="28" rx="6" fill="#34d399" opacity="0.15"/>
+  <text x="137" y="158" font-family="Inter,sans-serif" font-weight="600" font-size="10" fill="#34d399">+47.8%</text>
+  <rect x="40" y="260" width="320" height="1" fill="#1a1a2e"/>
+  <text x="55" y="274" font-family="Inter,sans-serif" font-size="8" fill="#444">Jan</text>
+  <text x="115" y="274" font-family="Inter,sans-serif" font-size="8" fill="#444">Mar</text>
+  <text x="180" y="274" font-family="Inter,sans-serif" font-size="8" fill="#444">May</text>
+  <text x="245" y="274" font-family="Inter,sans-serif" font-size="8" fill="#444">Jul</text>
+  <text x="310" y="274" font-family="Inter,sans-serif" font-size="8" fill="#444">Sep</text>
+  <text x="356" y="274" font-family="Inter,sans-serif" font-size="8" fill="#444">Nov</text>
+  <text x="40" y="90" font-family="Inter,sans-serif" font-size="8" fill="#444">100K</text>
+  <text x="40" y="140" font-family="Inter,sans-serif" font-size="8" fill="#444">150K</text>
+  <text x="40" y="190" font-family="Inter,sans-serif" font-size="8" fill="#444">200K</text>
+  <text x="40" y="240" font-family="Inter,sans-serif" font-size="8" fill="#444">250K</text>
+  <rect x="40" y="82" width="320" height="1" fill="#1a1a2e" opacity="0.5"/>
+  <rect x="40" y="132" width="320" height="1" fill="#1a1a2e" opacity="0.5"/>
+  <rect x="40" y="182" width="320" height="1" fill="#1a1a2e" opacity="0.5"/>
+  <rect x="40" y="232" width="320" height="1" fill="#1a1a2e" opacity="0.5"/>
+</svg>
