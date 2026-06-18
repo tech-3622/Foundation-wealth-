@@ -1,342 +1,720 @@
 {% extends "layout.html" %}
 {% block title %}Dashboard — Foundation Wealth{% endblock %}
 {% block content %}
-<div class="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+:root { --orange: #FF6B35; --orange-light: #FF8F5E; --orange-dark: #E55A2B; --orange-glow: rgba(255,107,53,0.3); --gold: #FFD700; }
+.dash-bg { background: #0A0E27; padding-bottom: 80px; }
+.dash-card { background: rgba(21,26,45,0.95); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; backdrop-filter: blur(12px); transition: all 0.3s cubic-bezier(0.4,0,0.2,1); overflow: hidden; }
+.dash-card:hover { border-color: rgba(255,107,53,0.2); box-shadow: 0 8px 40px rgba(255,107,53,0.08); transform: translateY(-2px); }
+.dash-card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-wrap: wrap; }
+.dash-card-body { padding: 20px; }
+.orange-bar { height: 3px; background: linear-gradient(90deg, #FF6B35, #FF8F5E, #FFD700); border-radius: 0 0 4px 4px; }
+.stat-card { background: rgba(21,26,45,0.95); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px; position: relative; overflow: hidden; transition: all 0.3s ease; }
+.stat-card:hover { border-color: rgba(255,107,53,0.25); transform: translateY(-3px); box-shadow: 0 12px 48px rgba(255,107,53,0.1); }
+.stat-card .accent-line { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 0 0 4px 4px; }
+.stat-value { font-size: clamp(1.2rem, 5vw, 2rem); font-weight: 800; letter-spacing: -0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; font-family: 'JetBrains Mono', monospace; }
+.stat-label { color: rgba(255,255,255,0.5); font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+.ticker-wrap { overflow: hidden; white-space: nowrap; position: relative; height: 40px; }
+.ticker-track { display: inline-flex; animation: marquee 35s linear infinite; }
+.ticker-track:hover { animation-play-state: paused; }
+.ticker-item { display: inline-flex; align-items: center; gap: 6px; padding: 0 20px; font-size: 0.8rem; border-right: 1px solid rgba(255,255,255,0.06); white-space: nowrap; }
+.tf-btn { padding: 6px 14px; font-size: 0.7rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; font-family: 'Inter', sans-serif; border: none; }
+.tf-btn-active { background: #FF6B35; color: white; box-shadow: 0 4px 16px rgba(255,107,53,0.3); }
+.tf-btn-inactive { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.06); }
+.tf-btn-inactive:hover { background: rgba(255,107,53,0.1); color: #FF6B35; border-color: rgba(255,107,53,0.2); }
+.holding-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-radius: 12px; transition: all 0.2s ease; cursor: pointer; gap: 12px; }
+.holding-row:hover { background: rgba(255,107,53,0.05); }
+.holding-row + .holding-row { border-top: 1px solid rgba(255,255,255,0.04); }
+.trade-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 10px; transition: all 0.2s ease; gap: 10px; }
+.trade-row:hover { background: rgba(255,255,255,0.03); }
+.trade-row + .trade-row { border-top: 1px solid rgba(255,255,255,0.04); }
+.price-up { color: #00D084; }
+.price-down { color: #FF4569; }
+.orange-btn { background: linear-gradient(135deg, #FF6B35, #E55A2B); color: white; font-weight: 600; border: none; border-radius: 10px; padding: 12px 24px; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 16px rgba(255,107,53,0.3); font-family: 'Inter', sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.orange-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,107,53,0.4); }
+.orange-btn-sm { background: linear-gradient(135deg, #FF6B35, #E55A2B); color: white; font-weight: 600; border: none; border-radius: 8px; padding: 8px 16px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 3px 12px rgba(255,107,53,0.25); font-family: 'Inter', sans-serif; }
+.orange-btn-sm:hover { transform: translateY(-1px); box-shadow: 0 5px 20px rgba(255,107,53,0.35); }
+.quick-pct-btn { padding: 6px 12px; font-size: 0.7rem; font-weight: 700; border-radius: 6px; background: rgba(255,107,53,0.1); color: #FF6B35; border: 1px solid rgba(255,107,53,0.15); cursor: pointer; transition: all 0.15s ease; font-family: 'JetBrains Mono', monospace; }
+.quick-pct-btn:hover { background: rgba(255,107,53,0.25); border-color: #FF6B35; transform: scale(1.05); }
+.quick-pct-btn.active { background: #FF6B35; color: white; border-color: #FF6B35; box-shadow: 0 2px 8px rgba(255,107,53,0.3); transform: scale(1.05); }
+.quick-pct-btn:active { transform: scale(0.95); }
+.toast-container { position: fixed; top: 80px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+.toast { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-radius: 12px; backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; font-size: 0.85rem; min-width: 280px; border: 1px solid rgba(255,255,255,0.08); font-family: 'Inter', sans-serif; }
+.toast-success { background: rgba(0,208,132,0.15); color: #00D084; border-color: rgba(0,208,132,0.2); }
+.toast-error { background: rgba(255,69,105,0.15); color: #FF4569; border-color: rgba(255,69,105,0.2); }
+.toast-info { background: rgba(255,107,53,0.15); color: #FF6B35; border-color: rgba(255,107,53,0.2); }
+.toast-out { animation: toastOut 0.3s ease-in forwards; }
+.skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite; border-radius: 8px; }
+@keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+.notif-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.holdings-scroll { max-height: 440px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,107,53,0.2) transparent; }
+.holdings-scroll::-webkit-scrollbar { width: 4px; }
+.holdings-scroll::-webkit-scrollbar-thumb { background: rgba(255,107,53,0.3); border-radius: 4px; }
+.holding-right { text-align: right; flex-shrink: 0; white-space: nowrap; }
+input, select, textarea { padding: 12px 16px !important; font-family: 'Inter', sans-serif; }
+input.font-mono, select.font-mono { font-family: 'JetBrains Mono', monospace !important; }
+.notif-overlay { position: fixed; inset: 0; z-index: 45; display: none; }
+.notif-overlay.show { display: block; }
+.notif-panel { position: fixed; top: 72px; right: 16px; width: 360px; max-width: calc(100vw - 32px); max-height: calc(100vh - 100px); background: rgba(21,26,45,0.98); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; box-shadow: 0 16px 64px rgba(0,0,0,0.5); backdrop-filter: blur(24px); z-index: 46; overflow: hidden; display: none; }
+.notif-panel.show { display: flex; flex-direction: column; }
+.notif-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.notif-panel-body { overflow-y: auto; padding: 12px; flex: 1; }
+@media (max-width: 420px) {
+    .stat-value { font-size: clamp(0.95rem, 5.5vw, 1.4rem); }
+    .dash-card-header { padding: 14px; flex-direction: column; align-items: flex-start; }
+    .dash-card-body { padding: 14px; }
+    .holding-row { padding: 10px 12px; }
+    .stat-card { padding: 14px; }
+    .notif-panel { right: 8px; width: calc(100vw - 16px); }
+}
+.price-flash-up { animation: flashUpdate 0.5s ease-out; }
+.price-flash-down { animation: flashUpdate 0.5s ease-out; }
+@keyframes flashUpdate { 0% { opacity: 0.4; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
+</style>
+
+{% set msg = request.query_params.get('trade') %}
+<div class="toast-container" id="toast-container">
+{% if msg == 'success' %}<div class="toast toast-success"><svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Trade executed successfully</div>
+{% elif msg == 'insufficient_balance' %}<div class="toast toast-error">Insufficient balance</div>
+{% elif msg == 'insufficient_holdings' %}<div class="toast toast-error">Not enough shares to sell</div>
+{% elif msg == 'error' %}<div class="toast toast-error">Trade failed</div>
+{% elif msg == 'kyc' %}<div class="toast toast-info">KYC verification required</div>{% endif %}
+</div>
+
+<div class="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto dash-bg">
 
     {% if user.kyc_status == 'none' %}
-    <div class="mb-6 p-0.5 bg-gradient-to-r from-amber-500/30 via-orange-500/20 to-amber-500/30 rounded-xl premium-card relative overflow-hidden group">
-        <div class="p-4 sm:p-5 bg-[#111118] rounded-[10px] flex items-center justify-between gap-4">
+    <div class="mb-4 p-0.5 bg-gradient-to-r from-orange-500/30 via-amber-500/20 to-orange-500/30 rounded-2xl">
+        <div class="p-4 sm:p-5 bg-[#151A2D] rounded-[14px] flex items-center justify-between gap-4 flex-wrap">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                    <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <div class="w-10 h-10 rounded-xl bg-[#FF6B35]/15 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
                 </div>
-                <div><p class="text-white font-semibold text-sm">KYC Verification Required</p><p class="text-gray-400 text-xs mt-0.5">Complete identity verification to start trading and depositing</p></div>
+                <div class="min-w-0"><p class="text-white font-semibold text-sm">KYC Verification Required</p><p class="text-gray-400 text-xs mt-0.5">Complete identity verification to start trading and depositing</p></div>
             </div>
-            <button onclick="showKYC()" class="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white text-sm font-semibold rounded-lg transition shrink-0 shadow-lg shadow-amber-500/20">Complete KYC</button>
+            <button onclick="showKYC()" class="orange-btn-sm shrink-0">Complete KYC</button>
         </div>
     </div>
     {% elif user.kyc_status == 'pending' %}
-    <div class="mb-6 p-0.5 bg-gradient-to-r from-blue-500/30 via-purple-500/20 to-blue-500/30 rounded-xl premium-card relative overflow-hidden">
-        <div class="p-4 sm:p-5 bg-[#111118] rounded-[10px] flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center shrink-0">
+    <div class="mb-4 p-0.5 bg-gradient-to-r from-blue-500/30 via-blue-500/20 to-blue-500/30 rounded-2xl">
+        <div class="p-4 sm:p-5 bg-[#151A2D] rounded-[14px] flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center shrink-0">
                 <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
-            <div><p class="text-white font-semibold text-sm">KYC Under Review</p><p class="text-blue-300 text-xs mt-0.5">Your documents are being reviewed by our team.</p></div>
-        </div>
-    </div>
-    {% elif user.kyc_status == 'rejected' %}
-    <div class="mb-6 p-0.5 bg-gradient-to-r from-red-500/30 via-red-500/20 to-red-500/30 rounded-xl premium-card relative overflow-hidden">
-        <div class="p-4 sm:p-5 bg-[#111118] rounded-[10px] flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500/20 to-red-500/10 flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <div><p class="text-white font-semibold text-sm">KYC Rejected</p>{% if user.kyc_rejection_reason %}<p class="text-red-300 text-xs mt-0.5">{{ user.kyc_rejection_reason }}</p>{% endif %}</div>
-            </div>
-            <button onclick="showKYC()" class="px-4 py-2 bg-gradient-to-r from-red-600 to-red-600 hover:from-red-500 hover:to-red-500 text-white text-sm font-semibold rounded-lg transition shrink-0">Resubmit</button>
+            <div class="min-w-0"><p class="text-white font-semibold text-sm">KYC Under Review</p><p class="text-blue-300 text-xs mt-0.5">Your documents are being reviewed by our team.</p></div>
         </div>
     </div>
     {% endif %}
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 flex items-center justify-center shadow-lg shadow-blue-500/10">
-                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            </div>
-            <div>
-                <h1 class="text-2xl font-bold text-white">Dashboard</h1>
-                <p class="text-gray-500 text-sm">Welcome back, <span class="text-white font-medium">{{ user.username }}</span></p>
-            </div>
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div class="min-w-0">
+            <h1 class="text-2xl font-bold text-white" style="font-family:'Inter',sans-serif">Dashboard</h1>
+            <p class="text-gray-500 text-sm mt-0.5 truncate">Welcome back, <span class="text-white font-medium">{{ user.username }}</span> &middot; <span id="live-time" class="text-[#FF6B35]"></span></p>
         </div>
-        <div class="flex items-center gap-2">
-            <div class="relative">
-                <button onclick="toggleNotifications()" class="relative p-2.5 bg-[#111118] border border-gray-800 rounded-xl hover:border-gray-700 transition premium-card">
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                    {% if notifications > 0 %}<span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-red-500/30">{{ notifications }}</span>{% endif %}
-                </button>
-                <div id="notifications-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-[#111118] border border-gray-800 rounded-xl shadow-2xl z-50 premium-card"><div class="p-3 border-b border-gray-800 flex justify-between items-center"><span class="text-white font-semibold text-sm">Notifications</span><button onclick="markNotificationsRead()" class="text-xs text-blue-400 hover:text-blue-300">Mark all read</button></div><div id="notifications-list" class="max-h-64 overflow-y-auto p-2 space-y-1"><div class="text-center text-gray-600 text-sm py-4">Loading...</div></div></div>
-            </div>
-            <a href="/logout" class="px-4 py-2.5 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-xl hover:border-gray-500 transition flex items-center gap-1.5 premium-card"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Logout</a>
+        <div class="flex items-center gap-2 shrink-0">
+            <button onclick="toggleNotifPanel()" id="bell-btn" class="relative p-3 bg-[#151A2D] border border-gray-700/50 rounded-xl hover:border-[#FF6B35]/30 transition-all duration-200" aria-label="Notifications">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                {% if notifications > 0 %}<span class="absolute -top-1 -right-1 w-5 h-5 bg-[#FF6B35] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-[#FF6B35]/30 animate-pulse-orange">{{ notifications }}</span>{% endif %}
+            </button>
+            <a href="/logout" class="p-3 bg-[#151A2D] border border-gray-700/50 rounded-xl hover:border-red-500/30 transition-all duration-200" aria-label="Logout">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            </a>
         </div>
     </div>
 
-    <div class="flex flex-wrap gap-2 mb-8">
-        <a href="/invest" class="flex items-center gap-2 px-4 py-2.5 bg-[#111118] border border-gray-800 rounded-xl text-sm text-gray-300 hover:text-white hover:border-green-500/30 transition premium-card"><div class="w-6 h-6 rounded-lg bg-green-500/10 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div> Markets</a>
-        <a href="/wallet" class="flex items-center gap-2 px-4 py-2.5 bg-[#111118] border border-gray-800 rounded-xl text-sm text-gray-300 hover:text-white hover:border-blue-500/30 transition premium-card"><div class="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg></div> Wallet</a>
-        {% if user.kyc_status != 'verified' and user.kyc_status != 'pending' %}
-        <button onclick="showKYC()" class="flex items-center gap-2 px-4 py-2.5 bg-[#111118] border border-gray-800 rounded-xl text-sm text-gray-300 hover:text-white hover:border-amber-500/30 transition premium-card"><div class="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div> KYC</button>
-        {% endif %}
-        <button onclick="document.getElementById('algo-form').classList.toggle('hidden')" class="flex items-center gap-2 px-4 py-2.5 bg-[#111118] border border-gray-800 rounded-xl text-sm text-gray-300 hover:text-white hover:border-violet-500/30 transition premium-card"><div class="w-6 h-6 rounded-lg bg-violet-500/10 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg></div> Algorithm</button>
+    <div class="dash-card mb-6">
+        <div class="orange-bar"></div>
+        <div class="ticker-wrap py-2 px-2" id="ticker-wrap">
+            <div class="ticker-track" id="ticker-track"></div>
+        </div>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8" id="stat-cards">
-        <div class="relative overflow-hidden rounded-xl premium-card group">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-blue-400"></div>
-            <div class="p-4 sm:p-5 bg-[#111118] pt-5">
-                <div class="flex items-start justify-between mb-3">
-                    <p class="text-gray-500 text-[11px] font-semibold uppercase tracking-wider">Portfolio Value</p>
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/15 to-blue-500/5 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300"><svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6" id="stat-cards">
+        <div class="stat-card">
+            <div class="accent-line" style="background:linear-gradient(90deg,#FF6B35,#FF8F5E)"></div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+                <span class="stat-label">Portfolio Value</span>
+                <svg class="w-4 h-4 text-[#FF6B35] opacity-60 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            </div>
+            <div class="stat-value text-white" id="stat-portfolio-value">${{ "{:,.2f}".format(portfolio_value) }}</div>
+            <div class="flex items-center gap-2 mt-1 flex-wrap">
+                <span class="text-xs font-semibold price-up" id="stat-portfolio-change">+$0.00 (+0.00%)</span>
+                <span class="text-xs text-gray-600">today</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="accent-line" style="background:linear-gradient(90deg,#FF6B35,#FF8F5E)"></div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+                <span class="stat-label">24h Change</span>
+                <svg class="w-4 h-4 text-[#FF6B35] opacity-60 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <div class="stat-value price-up" id="stat-24h-change">+$0.00</div>
+            <div class="text-xs text-gray-500 mt-1">Updated <span id="stat-updated">just now</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="accent-line" style="background:linear-gradient(90deg,#FF6B35,#FF8F5E)"></div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+                <span class="stat-label">Best Performer</span>
+                <svg class="w-4 h-4 text-[#FF6B35] opacity-60 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <div class="stat-value text-white" id="stat-best">--</div>
+            <div class="text-xs text-gray-500 mt-1" id="stat-best-pct"></div>
+        </div>
+        <div class="stat-card">
+            <div class="accent-line" style="background:linear-gradient(90deg,#FF6B35,#FF8F5E)"></div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+                <span class="stat-label">Worst Performer</span>
+                <svg class="w-4 h-4 text-[#FF6B35] opacity-60 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+            </div>
+            <div class="stat-value text-white" id="stat-worst">--</div>
+            <div class="text-xs text-gray-500 mt-1" id="stat-worst-pct"></div>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+        <div class="lg:col-span-2 dash-card">
+            <div class="dash-card-header">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center gap-2">
+                        <span class="text-white font-semibold text-sm font-mono" id="chart-symbol-label">Chart</span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wider font-medium" id="chart-symbol-type">Real-time</span>
+                    </div>
+                    <select id="chart-symbol-select" class="bg-[#0A0E27] border border-gray-700/50 rounded-lg px-3 py-1.5 text-white text-xs font-mono focus:border-[#FF6B35] outline-none transition cursor-pointer">
+                        {% set default_chart_sym = portfolios[0].symbol if portfolios else "BTC" %}
+                        {% for s, info in (all_symbols.items()|list)[:20] %}
+                        <option value="{{ s }}" {% if s == default_chart_sym %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-                <p class="text-white text-xl sm:text-2xl font-bold number-glow tracking-tight" id="portfolio-value">${{ "{:,.2f}".format(portfolio_value) }}</p>
-                <div class="flex items-center gap-1.5 mt-1.5">
-                    <span class="flex items-center gap-0.5 text-xs {{ 'text-green-400' if portfolio_value >= 10000 else 'text-gray-500' }}"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg> {{ ((portfolio_value / 10000 - 1) * 100) | round(2) if portfolio_value != 10000 else 0 }}%</span>
-                    <span class="text-gray-600 text-xs">all time</span>
+                <div class="flex items-center gap-1 flex-wrap">
+                    <button class="tf-btn tf-btn-active" data-range="1d">1D</button>
+                    <button class="tf-btn tf-btn-inactive" data-range="1w">1W</button>
+                    <button class="tf-btn tf-btn-inactive" data-range="1m">1M</button>
+                    <button class="tf-btn tf-btn-inactive" data-range="3m">3M</button>
+                    <button class="tf-btn tf-btn-inactive" data-range="1y">1Y</button>
+                </div>
+            </div>
+            <div class="dash-card-body relative">
+                <canvas id="mainChart" height="280" class="w-full" style="min-height:220px"></canvas>
+                <div id="chartTooltip" class="absolute pointer-events-none opacity-0 transition-opacity duration-150" style="z-index:10">
+                    <div class="bg-[#0A0E27]/95 border border-gray-700/50 rounded-lg px-3 py-2 shadow-xl backdrop-blur-sm min-w-[130px]">
+                        <p id="ttTime" class="text-gray-400 text-xs mb-1.5"></p>
+                        <div class="space-y-0.5 text-xs font-mono">
+                            <div class="flex justify-between gap-3"><span class="text-gray-500">O</span><span id="ttOpen" class="text-white font-semibold"></span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-500">H</span><span id="ttHigh" class="text-green-400 font-semibold"></span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-500">L</span><span id="ttLow" class="text-red-400 font-semibold"></span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-500">C</span><span id="ttClose" class="text-white font-semibold"></span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-500">Vol</span><span id="ttVol" class="text-[#FF6B35] font-semibold"></span></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="relative overflow-hidden rounded-xl premium-card group">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-400"></div>
-            <div class="p-4 sm:p-5 bg-[#111118] pt-5">
-                <div class="flex items-start justify-between mb-3">
-                    <p class="text-gray-500 text-[11px] font-semibold uppercase tracking-wider">Balance</p>
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-                </div>
+
+        <div class="dash-card">
+            <div class="dash-card-header">
                 <div class="flex items-center gap-2">
-                    <p class="text-white text-xl sm:text-2xl font-bold number-glow tracking-tight">${{ "{:,.2f}".format(user.balance or 0) }}</p>
-                    <a href="/wallet" class="text-[11px] px-2 py-1 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-semibold transition shadow-lg shadow-emerald-500/20">+ Deposit</a>
+                    <svg class="w-4 h-4 text-[#FF6B35] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <span class="text-white font-semibold text-sm">Holdings</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] font-medium">{{ portfolios|length }}</span>
                 </div>
+                <a href="/portfolio" class="orange-btn-sm text-xs">View All</a>
             </div>
-        </div>
-        <div class="relative overflow-hidden rounded-xl premium-card group">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-violet-400"></div>
-            <div class="p-4 sm:p-5 bg-[#111118] pt-5">
-                <div class="flex items-start justify-between mb-3">
-                    <p class="text-gray-500 text-[11px] font-semibold uppercase tracking-wider">Positions</p>
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500/15 to-violet-500/5 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300"><svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
-                </div>
-                <p class="text-white text-xl sm:text-2xl font-bold number-glow tracking-tight" id="positions-count">{{ portfolios|length }}</p>
-                <p class="text-gray-500 text-xs mt-1.5">Open positions</p>
-            </div>
-        </div>
-        <div class="relative overflow-hidden rounded-xl premium-card group">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-amber-400"></div>
-            <div class="p-4 sm:p-5 bg-[#111118] pt-5">
-                <div class="flex items-start justify-between mb-3">
-                    <p class="text-gray-500 text-[11px] font-semibold uppercase tracking-wider">Win Rate</p>
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300"><svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg></div>
-                </div>
-                <p class="text-white text-xl sm:text-2xl font-bold number-glow tracking-tight">{{ win_rate }}%</p>
-                <p class="text-gray-500 text-xs mt-1.5">{{ trades|length }} total trades</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="grid lg:grid-cols-2 gap-6 mb-8">
-        <div class="p-0.5 bg-gradient-to-br from-blue-500/20 via-transparent to-purple-500/20 rounded-xl premium-card">
-            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/15 to-purple-500/10 flex items-center justify-center"><svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg></div>
-                    <h3 class="text-white font-semibold">Portfolio Performance</h3>
-                </div>
-                <canvas id="portfolioChart" height="220" class="w-full"></canvas>
-            </div>
-        </div>
-        <div class="p-0.5 bg-gradient-to-br from-purple-500/20 via-transparent to-pink-500/20 rounded-xl premium-card">
-            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500/15 to-pink-500/10 flex items-center justify-center"><svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/></svg></div>
-                    <h3 class="text-white font-semibold">Asset Allocation</h3>
-                </div>
-                <canvas id="allocationChart" height="220" class="w-full"></canvas>
-                <div id="allocation-legend" class="flex flex-wrap gap-3 mt-3 justify-center"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="grid lg:grid-cols-2 gap-6 mb-8">
-        <div class="p-0.5 bg-gradient-to-br from-emerald-500/20 via-transparent to-emerald-500/10 rounded-xl premium-card">
-            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 flex items-center justify-center"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
-                        <h3 class="text-white font-semibold text-sm">Market Watch</h3>
-                    </div>
-                    <button onclick="refreshPrices()" class="text-xs px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transition flex items-center gap-1 shadow-lg shadow-blue-500/20"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh</button>
-                </div>
-                <div id="market-prices" class="space-y-1.5"><div class="text-center text-gray-600 text-sm py-8">Loading prices...</div></div>
-            </div>
-        </div>
-        <div class="p-0.5 bg-gradient-to-br from-blue-500/20 via-transparent to-purple-500/20 rounded-xl premium-card">
-            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/15 to-purple-500/10 flex items-center justify-center"><svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
-                        <h3 class="text-white font-semibold text-sm">Quick Trade</h3>
-                    </div>
-                    <a href="/invest" class="text-xs px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white transition flex items-center gap-1 shadow-lg shadow-purple-500/20"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Browse</a>
-                </div>
-                <form method="POST" action="/api/trades" class="space-y-3">
-                    <input type="hidden" name="do_redirect" value="1">
-                    <div class="grid grid-cols-3 gap-3">
-                        <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Asset Type</label><select id="trade-asset-type" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none transition"><option value="">All</option><option value="stock">Stocks</option><option value="crypto">Crypto</option><option value="forex">Forex</option><option value="commodity">Commodities</option><option value="etf">ETFs</option><option value="index">Indices</option><option value="bond">Bonds</option><option value="reit">REITs</option></select></div>
-                        <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Symbol</label><select name="symbol" id="trade-symbol" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none transition"><option value="">Select...</option></select></div>
-                        <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Side</label><select name="side" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none transition"><option value="buy">Buy / Long</option><option value="sell">Sell / Short</option></select></div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Order Type</label><select name="trade_type" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none transition"><option value="market">Market</option><option value="limit">Limit</option><option value="stop">Stop</option></select></div>
-                        <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Quantity</label><input type="number" name="quantity" placeholder="0.00" step="any" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none transition"></div>
-                    </div>
-                    <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Price <span class="text-gray-600">(optional for market)</span></label><input type="number" name="price" placeholder="0.00" step="0.01" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none transition"></div>
-                    <button type="submit" class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition text-sm shadow-lg shadow-blue-500/20 hover:shadow-purple-500/30">Place Order</button>
-                </form>
-            </div>
-        </div>
-        <script>
-        const ALL_SYMBOLS = {"stock":["AAPL","TSLA","NVDA","MSFT"],"crypto":["BTC","ETH","SOL","XRP"],"forex":["EUR/USD","GBP/USD","USD/JPY"],"commodity":["XAU/USD","XAG/USD","CL"],"etf":["SPY","QQQ","VOO"],"index":["SPX","IXIC","DJI"],"bond":["US10Y","AGG"],"reit":["PLD","AMT"]};
-        document.getElementById('trade-asset-type')?.addEventListener('change', function() {
-            const sel = document.getElementById('trade-symbol');
-            if (!sel) return;
-            const type = this.value;
-            sel.innerHTML = '<option value="">Select...</option>';
-            if (!type) {
-                Object.entries(ALL_SYMBOLS).forEach(([t, syms]) => { syms.forEach(s => { sel.innerHTML += '<option value="'+s+'">'+s+'</option>'; }); });
-            } else {
-                (ALL_SYMBOLS[type]||[]).forEach(s => { sel.innerHTML += '<option value="'+s+'">'+s+'</option>'; });
-            }
-        });
-        document.getElementById('trade-asset-type')?.dispatchEvent(new Event('change'));
-        </script>
-    </div>
-
-    <div class="grid lg:grid-cols-2 gap-6 mb-8">
-        <div class="p-0.5 bg-gradient-to-br from-emerald-500/20 via-transparent to-emerald-500/10 rounded-xl premium-card">
-            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 flex items-center justify-center"><svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
-                    <h3 class="text-white font-semibold">Portfolio</h3>
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-medium">{{ portfolios|length }} holdings</span>
-                </div>
+            <div class="dash-card-body holdings-scroll p-3">
                 {% if portfolios %}
-                <div class="space-y-2">{% for p in portfolios %}{% set pval = p.avg_price * p.quantity %}<div class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 hover:border-gray-700/50 transition premium-card"><div class="flex items-center gap-3 min-w-0"><div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 flex items-center justify-center shrink-0"><span class="text-xs font-bold text-emerald-400">{{ p.symbol[:2] }}</span></div><div><p class="text-white text-sm font-semibold">{{ p.symbol }}</p><p class="text-gray-500 text-xs">{{ p.quantity }} @ ${{ "{:,.2f}".format(p.avg_price) }}</p></div></div><div class="text-right shrink-0"><p class="text-white font-mono text-sm font-semibold">${{ "{:,.2f}".format(pval) }}</p></div></div>{% endfor %}</div>
+                {% for p in portfolios %}
+                {% set pval = p.avg_price * p.quantity %}
+                <div class="holding-row" data-symbol="{{ p.symbol }}">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-10 h-10 rounded-xl bg-[#151A2D] border border-gray-700/30 flex items-center justify-center shrink-0">
+                            {% set sl = symbol_logos.get(p.symbol, {"path":"","color":"#666"}) %}
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="{{ sl.color }}">{% if sl.path %}<path d="{{ sl.path }}"/>{% else %}<circle cx="12" cy="12" r="11" fill="none" stroke="{{ sl.color }}" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="{{ sl.color }}">{{ p.symbol[0] }}</text>{% endif %}</svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-white text-sm font-semibold font-mono truncate">{{ p.symbol }}</p>
+                            <p class="text-gray-500 text-xs truncate">{{ p.quantity }} @ ${{ "{:,.2f}".format(p.avg_price) }}</p>
+                        </div>
+                    </div>
+                    <div class="holding-right">
+                        <p class="text-white font-mono text-sm font-bold holding-value" data-symbol="{{ p.symbol }}" data-quantity="{{ p.quantity }}" data-avg="{{ p.avg_price }}">${{ "{:,.2f}".format(pval) }}</p>
+                        <p class="text-xs font-mono holding-change" data-symbol="{{ p.symbol }}" data-avg="{{ p.avg_price }}">--</p>
+                    </div>
+                </div>
+                {% endfor %}
                 {% else %}
-                <div class="text-center py-12"><div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8 text-emerald-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg></div><p class="text-gray-500 text-sm font-medium">No positions yet</p><p class="text-gray-600 text-xs mt-1">Place your first trade above</p></div>
+                <div class="text-center py-12">
+                    <div class="w-14 h-14 rounded-2xl bg-[#FF6B35]/5 flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-7 h-7 text-[#FF6B35]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </div>
+                    <p class="text-gray-500 text-sm font-medium">No positions yet</p>
+                    <p class="text-gray-600 text-xs mt-1">Start trading to build your portfolio</p>
+                </div>
                 {% endif %}
             </div>
         </div>
-        <div class="p-0.5 bg-gradient-to-br from-violet-500/20 via-transparent to-purple-500/20 rounded-xl premium-card">
-            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500/15 to-purple-500/10 flex items-center justify-center"><svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg></div>
-                        <h3 class="text-white font-semibold">Algorithms</h3>
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 font-medium">{{ algorithms|length }}</span>
-                    </div>
-                    <button onclick="document.getElementById('algo-form').classList.toggle('hidden')" class="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white transition flex items-center gap-1 shadow-lg shadow-violet-500/20"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> New</button>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#FF6B35] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span class="text-white font-semibold text-sm">Quick Trade</span>
                 </div>
-                <form id="algo-form" method="POST" action="/api/algorithms" class="hidden space-y-3 mb-4 p-4 bg-[#0a0a0f] rounded-xl border border-gray-800/50"><input type="text" name="name" placeholder="Strategy name" required class="w-full px-3 py-2.5 bg-[#111118] border border-gray-700 rounded-lg text-white text-sm focus:border-violet-500 outline-none transition"><textarea name="description" placeholder="Description" rows="2" class="w-full px-3 py-2.5 bg-[#111118] border border-gray-700 rounded-lg text-white text-sm focus:border-violet-500 outline-none transition"></textarea><textarea name="code" placeholder="def strategy(data):" rows="4" class="w-full px-3 py-2.5 bg-[#111118] border border-gray-700 rounded-lg text-white text-sm font-mono focus:border-violet-500 outline-none transition"></textarea><button type="submit" class="w-full px-3 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-sm font-semibold transition shadow-lg shadow-green-500/20">Create Algorithm</button></form>
-                {% if algorithms %}<div class="space-y-2">{% for a in algorithms %}<div class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl premium-card border border-gray-800/30"><div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500/15 to-purple-500/10 flex items-center justify-center shrink-0"><svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div><div class="min-w-0"><p class="text-white text-sm font-medium truncate">{{ a.name }}</p><p class="text-gray-500 text-xs truncate">{{ a.description or 'No description' }}</p></div></div><div class="flex items-center gap-2 shrink-0"><span class="text-xs px-2 py-1 rounded-full font-medium {{ 'bg-gradient-to-r from-green-500/15 to-emerald-500/10 text-green-400 border border-green-500/20' if a.status == 'active' else 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' if a.status == 'draft' else 'bg-gray-500/10 text-gray-400 border border-gray-500/20' }}">{{ a.status }}</span>{% if a.status == 'draft' %}<form method="POST" action="/api/algorithms/{{ a.id }}/deploy" class="inline"><button class="text-xs text-blue-400 hover:text-blue-300 px-2 py-1 rounded-lg hover:bg-blue-500/10 transition">Deploy</button></form>{% elif a.status == 'active' %}<form method="POST" action="/api/algorithms/{{ a.id }}/pause" class="inline"><button class="text-xs text-yellow-400 hover:text-yellow-300 px-2 py-1 rounded-lg hover:bg-yellow-500/10 transition">Pause</button></form>{% endif %}</div></div>{% endfor %}</div>{% else %}<div class="text-center py-12"><div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/5 flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8 text-violet-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div><p class="text-gray-500 text-sm font-medium">No algorithms yet</p><p class="text-gray-600 text-xs mt-1">Create your first trading algorithm</p></div>{% endif %}
+                <a href="/invest" class="orange-btn-sm text-xs"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg> Browse Markets</a>
+            </div>
+            <div class="dash-card-body">
+                <form method="POST" action="/api/trades" class="space-y-3">
+                    <input type="hidden" name="do_redirect" value="1">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Asset</label>
+                            <select name="symbol" id="trade-symbol" required class="w-full px-3 py-2.5 bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition font-mono">
+                                <option value="">Select...</option>
+                                {% for s in all_symbols %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Side</label>
+                            <select name="side" class="w-full px-3 py-2.5 bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition">
+                                <option value="buy">Buy</option>
+                                <option value="sell">Sell</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Quantity</label>
+                        <input type="number" name="quantity" id="trade-qty" placeholder="0.00" step="any" min="0.01" required class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition font-mono">
+                        <div class="flex gap-1.5 mt-2">
+                            <button type="button" class="quick-pct-btn" data-pct="10">10%</button>
+                            <button type="button" class="quick-pct-btn" data-pct="25">25%</button>
+                            <button type="button" class="quick-pct-btn" data-pct="50">50%</button>
+                            <button type="button" class="quick-pct-btn" data-pct="100">100%</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Type</label>
+                            <select name="trade_type" class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition">
+                                <option value="market">Market</option>
+                                <option value="limit">Limit</option>
+                                <option value="stop">Stop</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Price <span class="text-gray-600">(opt)</span></label>
+                            <input type="number" name="price" placeholder="Market" step="0.01" class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition font-mono">
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between px-4 py-3 bg-[#0A0E27] rounded-lg border border-gray-700/30">
+                        <span class="text-xs text-gray-500">Balance</span>
+                        <span class="text-sm font-mono text-white font-bold" id="trade-balance">${{ "{:,.2f}".format(user.balance) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between px-4 py-3 bg-[#0A0E27] rounded-lg border border-gray-700/30">
+                        <span class="text-xs text-gray-500">Est. Cost</span>
+                        <span class="text-sm font-mono text-white font-bold" id="trade-est-cost">$0.00</span>
+                    </div>
+                    <button type="submit" class="orange-btn w-full">Place Order</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#FF6B35] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <span class="text-white font-semibold text-sm">Recent Trades</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] font-medium">{{ trades[:10]|length }}</span>
+                </div>
+            </div>
+            <div class="dash-card-body p-3">
+                {% if trades %}
+                {% for t in trades[:10] %}
+                <div class="trade-row">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-lg bg-[#151A2D] border border-gray-700/30 flex items-center justify-center shrink-0">
+                            {% set sl = symbol_logos.get(t.symbol, {"path":"","color":"#666"}) %}
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="{{ sl.color }}">{% if sl.path %}<path d="{{ sl.path }}"/>{% else %}<circle cx="12" cy="12" r="11" fill="none" stroke="{{ sl.color }}" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="8" font-weight="bold" fill="{{ sl.color }}">{{ t.symbol[0] }}</text>{% endif %}</svg>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="text-white text-sm font-semibold font-mono">{{ t.symbol }}</span>
+                                <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold rounded-md {{ 'bg-green-500/15 text-green-400' if t.side == 'buy' else 'bg-red-500/15 text-red-400' }}">
+                                    <svg class="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="{{ 'M5 10l7-7m0 0l7 7m-7-7v18' if t.side == 'buy' else 'M19 14l-7 7m0 0l-7-7m7 7V3' }}"/></svg>
+                                    {{ t.side|upper }}
+                                </span>
+                            </div>
+                            <p class="text-gray-500 text-xs truncate">{{ t.quantity }} @ {{ ("$%.2f"|format(t.price)) if t.price else 'Market' }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium {{ 'bg-green-500/10 text-green-400 border border-green-500/20' if t.status == 'filled' else 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' if t.status == 'pending' else 'bg-red-500/10 text-red-400 border border-red-500/20' }}">
+                            <span class="notif-dot {{ 'bg-green-400' if t.status == 'filled' else 'bg-yellow-400' if t.status == 'pending' else 'bg-red-400' }}"></span>
+                            {{ t.status }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-10">
+                    <div class="w-14 h-14 rounded-2xl bg-purple-500/5 flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-7 h-7 text-purple-400/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    </div>
+                    <p class="text-gray-500 text-sm font-medium">No trades yet</p>
+                    <p class="text-gray-600 text-xs mt-1">Place your first trade using the form</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#FF6B35] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <span class="text-white font-semibold text-sm">Alerts</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] font-medium" id="alert-count">0</span>
+                </div>
+                <button onclick="refreshAlerts()" class="orange-btn-sm text-xs"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh</button>
+            </div>
+            <div class="dash-card-body p-3" id="alerts-list">
+                <div class="text-center text-gray-500 text-sm py-10">Loading alerts...</div>
             </div>
         </div>
     </div>
 
-    <div class="grid lg:grid-cols-2 gap-6 mb-8">
-        <div class="p-0.5 bg-gradient-to-br from-blue-500/20 via-transparent to-purple-500/20 rounded-xl premium-card">
-            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/15 to-purple-500/10 flex items-center justify-center"><svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg></div>
-                        <h3 class="text-white font-semibold">Recent Trades</h3>
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 font-medium">{{ trades[:10]|length }} entries</span>
-                    </div>
-                </div>
-                {% if trades %}
-                <div class="space-y-2">{% for t in trades[:10] %}<div class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 hover:border-gray-700/50 transition premium-card"><div class="flex items-center gap-3 min-w-0"><div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/15 to-purple-500/10 flex items-center justify-center shrink-0"><span class="text-xs font-bold text-blue-400">{{ t.symbol[:2] }}</span></div><div><div class="flex items-center gap-2"><p class="text-white text-sm font-semibold">{{ t.symbol }}</p><span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded-md {{ 'bg-green-500/15 text-green-400 border border-green-500/20' if t.side == 'buy' else 'bg-red-500/15 text-red-400 border border-red-500/20' }}"><svg class="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="{{ 'M5 10l7-7m0 0l7 7m-7-7v18' if t.side == 'buy' else 'M19 14l-7 7m0 0l-7-7m7 7V3' }}"/></svg> {{ t.side|upper }}</span></div><p class="text-gray-500 text-xs">{{ t.quantity }} @ {{ ("$%.2f"|format(t.price)) if t.price else 'Market' }}</p></div></div><div class="text-right shrink-0"><span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium {{ 'bg-green-500/10 text-green-400 border border-green-500/20' if t.status == 'filled' else 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' if t.status == 'pending' else 'bg-red-500/10 text-red-400 border border-red-500/20' }}"><span class="w-1.5 h-1.5 rounded-full {{ 'bg-green-400' if t.status == 'filled' else 'bg-yellow-400' if t.status == 'pending' else 'bg-red-400' }}"></span> {{ t.status }}</span></div></div>{% endfor %}</div>
-                {% else %}<div class="text-center py-8"><div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/5 flex items-center justify-center mx-auto mb-3"><svg class="w-7 h-7 text-blue-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div><p class="text-gray-500 text-sm font-medium">No trades yet</p><p class="text-gray-600 text-xs mt-1">Place your first trade using the form above</p></div>{% endif %}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        <a href="/invest" class="dash-card p-4 sm:p-5 flex items-center gap-3 hover:border-[#FF6B35]/20 group">
+            <div class="w-10 h-10 rounded-lg bg-[#FF6B35]/10 flex items-center justify-center group-hover:scale-110 transition shrink-0">
+                <svg class="w-5 h-5 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </div>
-        </div>
-        <div class="p-0.5 bg-gradient-to-br from-yellow-500/20 via-transparent to-amber-500/20 rounded-xl premium-card">
-            <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-yellow-500/15 to-amber-500/10 flex items-center justify-center"><svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg></div>
-                        <h3 class="text-white font-semibold">App Passwords</h3>
-                    </div>
-                    <button onclick="document.getElementById('app-pw-form').classList.toggle('hidden')" class="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transition flex items-center gap-1 shadow-lg shadow-blue-500/20"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Generate</button>
-                </div>
-                <div id="app-pw-result" class="hidden mb-4 p-4 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-xl"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/10 flex items-center justify-center shrink-0"><svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div><div><p class="text-yellow-400 text-sm font-semibold">App Password Generated</p><p id="app-pw-value" class="text-white font-mono text-base sm:text-lg mt-1 select-all bg-[#0a0a0f] px-3 py-2 rounded-lg"></p></div></div><p class="text-gray-500 text-xs mt-2 ml-13">Save this now. You won't be able to see it again.</p></div>
-                <form id="app-pw-form" class="hidden space-y-3 p-4 bg-[#0a0a0f] rounded-xl border border-gray-800/50"><div class="flex gap-3 items-end"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1.5 font-medium">Name</label><input type="text" name="name" placeholder="e.g. TradingView, API Bot" required class="w-full px-3 py-2.5 bg-[#111118] border border-gray-700 rounded-lg text-white text-sm focus:border-yellow-500 outline-none transition"></div><button type="submit" class="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-lg text-sm font-semibold transition shadow-lg shadow-blue-500/20 whitespace-nowrap">Generate</button></div></form>
+            <div class="min-w-0"><p class="text-white text-sm font-medium truncate">Markets</p><p class="text-gray-500 text-xs truncate">Browse all assets</p></div>
+        </a>
+        <a href="/wallet" class="dash-card p-4 sm:p-5 flex items-center gap-3 hover:border-[#FF6B35]/20 group">
+            <div class="w-10 h-10 rounded-lg bg-[#00D084]/10 flex items-center justify-center group-hover:scale-110 transition shrink-0">
+                <svg class="w-5 h-5 text-[#00D084]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             </div>
+            <div class="min-w-0"><p class="text-white text-sm font-medium truncate">Wallet</p><p class="text-gray-500 text-xs truncate">${{ "{:,.2f}".format(user.balance) }}</p></div>
+        </a>
+        <a href="/portfolio" class="dash-card p-4 sm:p-5 flex items-center gap-3 hover:border-[#FF6B35]/20 group">
+            <div class="w-10 h-10 rounded-lg bg-[#FF6B35]/10 flex items-center justify-center group-hover:scale-110 transition shrink-0">
+                <svg class="w-5 h-5 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div class="min-w-0"><p class="text-white text-sm font-medium truncate">Portfolio</p><p class="text-gray-500 text-xs truncate">View positions</p></div>
+        </a>
+        <a href="/settings" class="dash-card p-4 sm:p-5 flex items-center gap-3 hover:border-[#FF6B35]/20 group">
+            <div class="w-10 h-10 rounded-lg bg-[#FF6B35]/10 flex items-center justify-center group-hover:scale-110 transition shrink-0">
+                <svg class="w-5 h-5 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div class="min-w-0"><p class="text-white text-sm font-medium truncate">Settings</p><p class="text-gray-500 text-xs truncate">2FA, notifications</p></div>
+        </a>
+    </div>
+</div>
+
+<div class="notif-overlay" id="notif-overlay" onclick="closeNotifPanel()"></div>
+<div class="notif-panel" id="notif-panel">
+    <div class="notif-panel-header">
+        <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <span class="text-white font-semibold text-sm">Notifications</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] font-medium" id="notif-count">0</span>
         </div>
+        <button onclick="closeNotifPanel()" class="text-gray-500 hover:text-white transition p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <div class="notif-panel-body" id="notif-panel-body">
+        <div class="text-center text-gray-500 text-sm py-10">Loading...</div>
     </div>
 </div>
 
 <div id="kyc-modal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeKYC()"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-[#111118] border border-gray-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl premium-card">
-            <div class="flex items-center justify-between p-5 border-b border-gray-800"><div><h3 class="text-white font-semibold text-lg">Identity Verification</h3><p class="text-gray-500 text-xs">Required to trade and deposit funds</p></div><button onclick="closeKYC()" class="text-gray-500 hover:text-white transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+        <div class="bg-[#151A2D] border border-gray-700/50 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="flex items-center justify-between p-5 border-b border-gray-700/30">
+                <div class="min-w-0"><h3 class="text-white font-semibold text-lg">Identity Verification</h3><p class="text-gray-500 text-xs">Required to trade and deposit funds</p></div>
+                <button onclick="closeKYC()" class="text-gray-500 hover:text-white transition shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
             <div class="p-5 space-y-4">
                 <div id="kyc-error" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"></div>
-                <div class="grid sm:grid-cols-2 gap-3"><div><label class="block text-xs text-gray-400 mb-1">First Name</label><input id="kyc-first" readonly class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-sm cursor-not-allowed"></div><div><label class="block text-xs text-gray-400 mb-1">Last Name</label><input id="kyc-last" readonly class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-sm cursor-not-allowed"></div></div>
-                <div class="grid sm:grid-cols-2 gap-3"><div><label class="block text-xs text-gray-400 mb-1">Phone</label><input id="kyc-phone" readonly class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-sm cursor-not-allowed"></div><div><label class="block text-xs text-gray-400 mb-1">Country</label><input id="kyc-country" readonly class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-sm cursor-not-allowed"></div></div>
-                <hr class="border-gray-800">
-                <div class="grid sm:grid-cols-2 gap-3"><div><label class="block text-xs text-gray-400 mb-1">Date of Birth *</label><input id="kyc-dob" type="date" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none"></div><div><label class="block text-xs text-gray-400 mb-1">Occupation *</label><select id="kyc-occupation" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none"><option value="">Select...</option><option value="Employed">Employed</option><option value="Self-Employed">Self-Employed</option><option value="Student">Student</option><option value="Retired">Retired</option><option value="Unemployed">Unemployed</option><option value="Other">Other</option></select></div></div>
-                <div><label class="block text-xs text-gray-400 mb-1">Address *</label><input id="kyc-address" type="text" placeholder="Street address" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none"></div>
-                <div class="grid grid-cols-3 gap-3"><div><label class="block text-xs text-gray-400 mb-1">City *</label><input id="kyc-city" type="text" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none"></div><div><label class="block text-xs text-gray-400 mb-1">State *</label><input id="kyc-state" type="text" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none"></div><div><label class="block text-xs text-gray-400 mb-1">ZIP Code *</label><input id="kyc-zip" type="text" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none"></div></div>
-                <hr class="border-gray-800">
-                <div><label class="block text-xs text-gray-400 mb-1">ID Type *</label><select id="kyc-id-type" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none"><option value="">Select...</option><option value="passport">Passport</option><option value="driver_license">Driver's License</option><option value="national_id">National ID</option></select></div>
-                <div class="grid sm:grid-cols-2 gap-3"><div><label class="block text-xs text-gray-400 mb-1.5">ID Front *</label><input id="kyc-front" type="file" accept="image/*" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-blue-600 file:text-white file:text-xs hover:file:bg-blue-700 focus:border-blue-500 outline-none cursor-pointer"><img id="kyc-front-preview" class="hidden mt-2 rounded-lg max-h-32 object-cover border border-gray-700"></div><div><label class="block text-xs text-gray-400 mb-1.5">ID Back *</label><input id="kyc-back" type="file" accept="image/*" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-blue-600 file:text-white file:text-xs hover:file:bg-blue-700 focus:border-blue-500 outline-none cursor-pointer"><img id="kyc-back-preview" class="hidden mt-2 rounded-lg max-h-32 object-cover border border-gray-700"></div></div>
-                <div id="kyc-loading" class="hidden text-center py-4"><div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div><p class="text-gray-400 text-xs mt-2">Submitting...</p></div>
-                <button onclick="submitKYC()" id="kyc-submit-btn" class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold rounded-xl transition text-sm shadow-lg shadow-blue-500/20">Submit Verification</button>
+                <div class="grid sm:grid-cols-2 gap-3"><div><label class="block text-xs text-gray-400 mb-1">First Name</label><input id="kyc-first" readonly class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-gray-400 text-sm cursor-not-allowed"></div><div><label class="block text-xs text-gray-400 mb-1">Last Name</label><input id="kyc-last" readonly class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-gray-400 text-sm cursor-not-allowed"></div></div>
+                <div class="grid sm:grid-cols-2 gap-3"><div><label class="block text-xs text-gray-400 mb-1">Phone</label><input id="kyc-phone" readonly class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-gray-400 text-sm cursor-not-allowed"></div><div><label class="block text-xs text-gray-400 mb-1">Country</label><input id="kyc-country" readonly class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-gray-400 text-sm cursor-not-allowed"></div></div>
+                <hr class="border-gray-700/30">
+                <div class="grid sm:grid-cols-2 gap-3"><div><label class="block text-xs text-gray-400 mb-1">DOB *</label><input id="kyc-dob" type="date" required class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none"></div><div><label class="block text-xs text-gray-400 mb-1">Occupation *</label><select id="kyc-occupation" required class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none"><option value="">Select...</option><option value="Employed">Employed</option><option value="Self-Employed">Self-Employed</option><option value="Student">Student</option><option value="Retired">Retired</option></select></div></div>
+                <div><label class="block text-xs text-gray-400 mb-1">Address *</label><input id="kyc-address" type="text" required class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none"></div>
+                <div class="grid grid-cols-3 gap-3"><div><label class="block text-xs text-gray-400 mb-1">City *</label><input id="kyc-city" type="text" required class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none"></div><div><label class="block text-xs text-gray-400 mb-1">State *</label><input id="kyc-state" type="text" required class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none"></div><div><label class="block text-xs text-gray-400 mb-1">ZIP *</label><input id="kyc-zip" type="text" required class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none"></div></div>
+                <hr class="border-gray-700/30">
+                <div><label class="block text-xs text-gray-400 mb-1">ID Type *</label><select id="kyc-id-type" required class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none"><option value="">Select...</option><option value="passport">Passport</option><option value="driver_license">Driver's License</option><option value="national_id">National ID</option></select></div>
+                <div class="grid sm:grid-cols-2 gap-3"><div><label class="block text-xs text-gray-400 mb-1.5">Front *</label><input id="kyc-front" type="file" accept="image/*" required class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-gray-400 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[#FF6B35] file:text-white file:text-xs hover:file:bg-[#FF8F5E] outline-none cursor-pointer"><img id="kyc-front-preview" class="hidden mt-2 rounded-lg max-h-32 object-cover border border-gray-700"></div><div><label class="block text-xs text-gray-400 mb-1.5">Back *</label><input id="kyc-back" type="file" accept="image/*" required class="w-full bg-[#0A0E27] border border-gray-700/50 rounded-lg text-gray-400 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[#FF6B35] file:text-white file:text-xs hover:file:bg-[#FF8F5E] outline-none cursor-pointer"><img id="kyc-back-preview" class="hidden mt-2 rounded-lg max-h-32 object-cover border border-gray-700"></div></div>
+                <div id="kyc-loading" class="hidden text-center py-4"><div class="w-6 h-6 border-2 border-[#FF6B35] border-t-transparent rounded-full animate-spin mx-auto"></div><p class="text-gray-400 text-xs mt-2">Submitting...</p></div>
+                <button onclick="submitKYC()" id="kyc-submit-btn" class="orange-btn w-full">Submit Verification</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-function refreshPrices() {
-    fetch('/api/market/prices').then(r=>r.json()).then(data => {
-        const container = document.getElementById('market-prices');
-        container.innerHTML = '';
-        for (const [symbol, info] of Object.entries(data)) {
-            const color = info.change_pct >= 0 ? 'text-green-400' : 'text-red-400';
-            const bgColor = info.change_pct >= 0 ? 'bg-green-500/5' : 'bg-red-500/5';
-            const flash = info.change_pct >= 0 ? 'flash-green' : 'flash-red';
-            container.innerHTML += `<div class="flex items-center justify-between p-2.5 bg-[#0a0a0f] rounded-xl hover:bg-[#0a0a0f]/80 transition premium-card border border-gray-800/30 ${flash}"><div class="flex items-center gap-2.5"><span class="w-2 h-2 rounded-full ${info.change_pct >= 0 ? 'bg-green-400 shadow-[0_0_6px_rgba(52,211,153,0.4)]' : 'bg-red-400 shadow-[0_0_6px_rgba(248,113,113,0.4)]'}"></span><span class="text-white font-mono text-sm font-medium">${symbol}</span></div><span class="text-gray-300 font-mono text-sm tabular-nums">$${info.price.toFixed(2)}</span><span class="${color} font-mono text-sm tabular-nums font-medium">${info.change_pct >= 0 ? '+' : ''}${info.change_pct.toFixed(2)}%</span></div>`;
-        }
-    });
+const LOGOS = {{ symbol_logos | tojson }};
+const PORTFOLIO_SYMBOLS = [{% for p in portfolios %}"{{ p.symbol }}",{% endfor %}];
+const USER_BALANCE = {{ user.balance }};
+
+let prices = {};
+let currentRange = '1d';
+let currentChartSymbol = '{{ portfolios[0].symbol if portfolios else "BTC" }}';
+let mainChartData = null;
+let lastPriceUpdate = Date.now();
+
+function fmt(v) {
+    if (v >= 1000) return '$' + v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    if (v >= 1) return '$' + v.toFixed(2);
+    if (v >= 0.01) return '$' + v.toFixed(4);
+    return '$' + v.toFixed(6);
 }
-function toggleNotifications() {
-    const d = document.getElementById('notifications-dropdown');
-    d.classList.toggle('hidden');
-    if (!d.classList.contains('hidden')) {
-        fetch('/api/notifications').then(r=>r.json()).then(data => {
-            const list = document.getElementById('notifications-list');
-            list.innerHTML = data.length === 0 ? '<div class="text-center text-gray-600 text-sm py-4">No notifications</div>' : data.map(n => `<div class="p-3 hover:bg-[#0a0a0f] rounded-xl transition ${n.read ? '' : 'border-l-2 border-blue-500 bg-blue-500/5'}"><p class="text-white text-sm">${n.message}</p><p class="text-gray-600 text-xs mt-1">${new Date(n.created_at).toLocaleDateString()}</p></div>`).join('');
+
+function now() {
+    const d = new Date();
+    return d.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+}
+
+document.getElementById('live-time').textContent = now();
+setInterval(() => { document.getElementById('live-time').textContent = now(); }, 1000);
+
+async function fetchPrices() {
+    try {
+        const r = await fetch('/api/market/prices');
+        const newPrices = await r.json();
+        Object.entries(newPrices).forEach(([sym, info]) => {
+            if (prices[sym]) {
+                const dir = info.price > prices[sym].price ? 'up' : 'down';
+                const els = document.querySelectorAll('.holding-value[data-symbol="' + sym + '"]');
+                els.forEach(el => { el.classList.remove('price-flash-up','price-flash-down'); void el.offsetWidth; el.classList.add('price-flash-' + dir); setTimeout(() => el.classList.remove('price-flash-' + dir), 500); });
+            }
         });
+        prices = newPrices;
+        lastPriceUpdate = Date.now();
+        updateTicker();
+        updatePortfolioStats();
+        updateHoldings();
+    } catch(e) {}
+}
+
+function updateTicker() {
+    const track = document.getElementById('ticker-track');
+    if (!track) return;
+    const items = Object.entries(prices);
+    if (items.length === 0) return;
+    let html = '';
+    for (let rep = 0; rep < 2; rep++) {
+        for (const [sym, info] of items) {
+            const up = info.change_pct >= 0;
+            const color = up ? '#00D084' : '#FF4569';
+            const arrow = up ? '&#9650;' : '&#9660;';
+            const logo = LOGOS[sym];
+            const logoColor = logo ? logo.color : '#666';
+            html += '<div class="ticker-item">';
+            html += '<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="' + logoColor + '">' + (logo && logo.path ? '<path d="' + logo.path + '"/>' : '<circle cx="12" cy="12" r="11" fill="none" stroke="' + logoColor + '" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="8" font-weight="bold" fill="' + logoColor + '">' + sym[0] + '</text>') + '</svg>';
+            html += '<span class="text-white font-mono font-semibold text-xs">' + sym + '</span>';
+            html += '<span class="text-white font-mono text-xs">' + fmt(info.price) + '</span>';
+            html += '<span class="font-mono text-xs font-semibold" style="color:' + color + '">' + arrow + ' ' + (info.change_pct >= 0 ? '+' : '') + info.change_pct.toFixed(2) + '%</span>';
+            html += '</div>';
+        }
+    }
+    track.innerHTML = html;
+}
+
+function updatePortfolioStats() {
+    if (Object.keys(prices).length === 0) return;
+    let totalVal = 0;
+    let bestSym = '', bestPct = -Infinity;
+    let worstSym = '', worstPct = Infinity;
+    for (const sym of PORTFOLIO_SYMBOLS) {
+        const price = prices[sym];
+        if (!price) continue;
+        const el = document.querySelector('.holding-value[data-symbol="' + sym + '"]');
+        if (!el) continue;
+        const qty = parseFloat(el.dataset.quantity);
+        const avg = parseFloat(el.dataset.avg);
+        const curVal = price.price * qty;
+        totalVal += curVal;
+        const pct = ((price.price - avg) / avg) * 100;
+        if (pct > bestPct) { bestPct = pct; bestSym = sym; }
+        if (pct < worstPct) { worstPct = pct; worstSym = sym; }
+    }
+    totalVal += USER_BALANCE;
+    const valEl = document.getElementById('stat-portfolio-value');
+    if (valEl) valEl.textContent = '$' + totalVal.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2});
+    const navEl = document.getElementById('nav-balance');
+    if (navEl) navEl.textContent = '$' + totalVal.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('stat-best').textContent = bestSym || '--';
+    if (bestSym) document.getElementById('stat-best-pct').textContent = '+' + bestPct.toFixed(2) + '%';
+    document.getElementById('stat-worst').textContent = worstSym || '--';
+    if (worstSym && worstPct !== Infinity) document.getElementById('stat-worst-pct').textContent = worstPct.toFixed(2) + '%';
+}
+
+function updateHoldings() {
+    for (const sym of PORTFOLIO_SYMBOLS) {
+        const price = prices[sym];
+        if (!price) continue;
+        const valEl = document.querySelector('.holding-value[data-symbol="' + sym + '"]');
+        const chgEl = document.querySelector('.holding-change[data-symbol="' + sym + '"]');
+        if (!valEl || !chgEl) continue;
+        const qty = parseFloat(valEl.dataset.quantity);
+        const avg = parseFloat(valEl.dataset.avg);
+        const curVal = price.price * qty;
+        const pct = ((price.price - avg) / avg) * 100;
+        const up = price.change_pct >= 0;
+        valEl.textContent = '$' + curVal.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2});
+        valEl.style.color = curVal >= avg * qty ? '#00D084' : '#FF4569';
+        chgEl.textContent = (up ? '+' : '') + pct.toFixed(2) + '%';
+        chgEl.style.color = up ? '#00D084' : '#FF4569';
     }
 }
-function markNotificationsRead() { fetch('/api/notifications/read', {method:'POST'}).then(() => { document.querySelector('.bg-red-500')?.remove(); }); }
+
+async function fetchCandleData(symbol, range) {
+    try {
+        const r = await fetch('/api/market/candles/' + symbol + '?range=' + range);
+        mainChartData = await r.json();
+        drawMainChart(mainChartData);
+    } catch(e) {}
+}
+
+function drawMainChart(data) {
+    const canvas = document.getElementById('mainChart');
+    if (!canvas || !data || data.length < 2) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const W = rect.width * dpr; canvas.width = W;
+    const H = 280 * dpr; canvas.height = H;
+    ctx.scale(dpr, dpr);
+    const w = rect.width, h = 280;
+    ctx.clearRect(0, 0, w, h);
+    const pad = {t:20, b:46, l:65, r:20};
+    const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+    let mn = Infinity, mx = -Infinity;
+    data.forEach(d => { if (d.l < mn) mn = d.l; if (d.h > mx) mx = d.h; });
+    const range = mx - mn || 1;
+    const padR = range * 0.08;
+    mn -= padR; mx += padR;
+    const yr = mx - mn || 1;
+    function y(v) { return pad.t + ch - ((v - mn) / yr) * ch; }
+    function x(i) { return pad.l + (i / data.length) * cw; }
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 0.5;
+    for (let p = 0; p <= 4; p++) { const yy = pad.t + (p/4)*ch; ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(w-pad.r, yy); ctx.stroke(); }
+    ctx.fillStyle = '#888'; ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'right';
+    for (let p = 0; p <= 4; p++) { const v = mx - (p/4)*yr; ctx.fillText(fmt(v), pad.l-8, pad.t+(p/4)*ch+3); }
+    const maxVol = Math.max(...data.map(d=>d.v));
+    data.forEach((d,i) => {
+        const isUp = d.c >= d.o;
+        const color = isUp ? '#00D084' : '#FF4569';
+        const cx = x(i);
+        ctx.strokeStyle = color; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(cx, y(d.h)); ctx.lineTo(cx, y(d.l)); ctx.stroke();
+        const top = y(Math.max(d.o, d.c)), bot = y(Math.min(d.o, d.c));
+        const hgt = Math.max(bot - top, 1);
+        const cw2 = Math.max(1, Math.min(8, (w / data.length) * 0.4));
+        ctx.fillStyle = color; ctx.fillRect(cx - cw2/2, top, cw2, hgt);
+        const vh = (d.v / maxVol) * 20;
+        ctx.fillStyle = isUp ? 'rgba(0,208,132,0.1)' : 'rgba(255,69,105,0.1)';
+        ctx.fillRect(cx - cw2/3, h - pad.b + 4, cw2/1.5, vh);
+    });
+    ctx.fillStyle = '#666'; ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'center';
+    const step = Math.max(1, Math.floor(data.length / 6));
+    for (let i = 0; i < data.length; i += step) ctx.fillText(''+(i+1), x(i), h - 6);
+    const last = data[data.length-1];
+    const lcx = x(data.length-1), lcy = y(last.c);
+    const lc = last.c >= last.o ? '#00D084' : '#FF4569';
+    ctx.beginPath(); ctx.arc(lcx, lcy, 4, 0, Math.PI*2); ctx.fillStyle = lc; ctx.fill();
+    ctx.beginPath(); ctx.arc(lcx, lcy, 2, 0, Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+    window._chartCtx = {data, pad, w, h, cw, ch, mn, mx, yr, y, x, fmtPrice: fmt};
+}
+
+async function fetchAlerts() {
+    try {
+        const r = await fetch('/api/notifications');
+        const data = await r.json();
+        const list = document.getElementById('alerts-list');
+        const count = document.getElementById('alert-count');
+        if (!list) return;
+        if (!data || data.length === 0) {
+            list.innerHTML = '<div class="text-center text-gray-500 text-sm py-10"><svg class="w-10 h-10 text-gray-700 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>No alerts yet</div>';
+            if (count) count.textContent = '0';
+            return;
+        }
+        if (count) count.textContent = data.length;
+        list.innerHTML = data.slice(0,8).map(n => {
+            const typeColor = n.type === 'trade' ? '#FF6B35' : n.type === 'price_alert' ? '#FF4569' : '#00D084';
+            const typeIcon = n.type === 'trade' ? 'M13 10V3L4 14h7v7l9-11h-7z' : n.type === 'price_alert' ? 'M12 9v2m0 4h.01' : 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622';
+            return '<div class="trade-row"><div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background:' + typeColor + '15"><svg class="w-4 h-4" fill="none" stroke="' + typeColor + '" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="' + typeIcon + '"/></svg></div><div class="min-w-0"><p class="text-white text-xs font-medium truncate">' + (n.title || n.message) + '</p><p class="text-gray-600 text-[10px]">' + new Date(n.created_at).toLocaleDateString() + '</p></div></div></div>';
+        }).join('');
+    } catch(e) {}
+}
+
+async function fetchNotifPanel() {
+    try {
+        const r = await fetch('/api/notifications');
+        const data = await r.json();
+        const body = document.getElementById('notif-panel-body');
+        const count = document.getElementById('notif-count');
+        if (!body) return;
+        if (!data || data.length === 0) {
+            body.innerHTML = '<div class="text-center text-gray-500 text-sm py-10"><svg class="w-10 h-10 text-gray-700 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>No notifications</div>';
+            if (count) count.textContent = '0';
+            return;
+        }
+        if (count) count.textContent = data.length;
+        body.innerHTML = data.map(n => {
+            const tc = n.read ? '#555' : '#FF6B35';
+            const bg = n.read ? '' : 'rgba(255,107,53,0.04)';
+            return '<div class="trade-row" style="' + (bg ? 'background:' + bg : '') + '"><div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded-lg bg-[#0A0E27] flex items-center justify-center shrink-0"><svg class="w-4 h-4" fill="none" stroke="' + tc + '" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div class="min-w-0"><p class="text-white text-xs font-medium truncate">' + (n.title || n.message) + '</p><p class="text-gray-600 text-[10px]">' + new Date(n.created_at).toLocaleDateString() + '</p></div></div></div>';
+        }).join('');
+    } catch(e) {}
+}
+
+function toggleNotifPanel() {
+    const panel = document.getElementById('notif-panel');
+    const overlay = document.getElementById('notif-overlay');
+    const show = !panel.classList.contains('show');
+    panel.classList.toggle('show', show);
+    overlay.classList.toggle('show', show);
+    if (show) fetchNotifPanel();
+}
+
+function closeNotifPanel() {
+    document.getElementById('notif-panel').classList.remove('show');
+    document.getElementById('notif-overlay').classList.remove('show');
+}
+
+function refreshAlerts() { fetchAlerts(); }
+
 function showKYC() {
     document.getElementById('kyc-modal').classList.remove('hidden');
     document.getElementById('kyc-error').classList.add('hidden');
-    document.getElementById('kyc-submit-btn').disabled = false;
-    document.getElementById('kyc-submit-btn').textContent = 'Submit Verification';
-    document.getElementById('kyc-loading').classList.add('hidden');
     fetch('/api/user/kyc').then(r=>r.json()).then(d => {
-        ['first','last','phone','country','date_of_birth','address','city','state','zip_code','occupation','id_type'].forEach(f => { const el = document.getElementById('kyc-' + f.replace('_','-')); if (el) el.value = d[f.replace('-','_')] || ''; });
+        ['first','last','phone','country','date_of_birth','address','city','state','zip_code','occupation','id_type'].forEach(f => {
+            const el = document.getElementById('kyc-' + f.replace('_','-'));
+            if (el) el.value = d[f.replace('-','_')] || '';
+        });
     });
 }
 function closeKYC() { document.getElementById('kyc-modal').classList.add('hidden'); }
-function previewKYCImage(input, previewId) { const f=input.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{document.getElementById(previewId).src=e.target.result; document.getElementById(previewId).classList.remove('hidden')}; r.readAsDataURL(f); }
+function previewKYCImage(input, id) { const f=input.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{document.getElementById(id).src=e.target.result;document.getElementById(id).classList.remove('hidden')}; r.readAsDataURL(f); }
 async function submitKYC() {
-    const errDiv = document.getElementById('kyc-error'); errDiv.classList.add('hidden');
+    const err = document.getElementById('kyc-error'); err.classList.add('hidden');
     const dob = document.getElementById('kyc-dob').value;
     const address = document.getElementById('kyc-address').value;
     const city = document.getElementById('kyc-city').value;
     const state = document.getElementById('kyc-state').value;
     const zip = document.getElementById('kyc-zip').value;
-    const occupation = document.getElementById('kyc-occupation').value;
+    const occ = document.getElementById('kyc-occupation').value;
     const idType = document.getElementById('kyc-id-type').value;
     const front = document.getElementById('kyc-front').files[0];
     const back = document.getElementById('kyc-back').files[0];
-    if (!dob||!address||!city||!state||!zip||!occupation||!idType||!front||!back) { errDiv.textContent='All fields are required'; errDiv.classList.remove('hidden'); return; }
+    if (!dob||!address||!city||!state||!zip||!occ||!idType||!front||!back) { err.textContent='All fields required'; err.classList.remove('hidden'); return; }
     document.getElementById('kyc-loading').classList.remove('hidden');
     document.getElementById('kyc-submit-btn').disabled = true;
-    document.getElementById('kyc-submit-btn').textContent = 'Submitting...';
     const fd = new FormData();
     fd.append('date_of_birth',dob); fd.append('address',address); fd.append('city',city); fd.append('state',state);
-    fd.append('zip_code',zip); fd.append('occupation',occupation); fd.append('id_type',idType);
+    fd.append('zip_code',zip); fd.append('occupation',occ); fd.append('id_type',idType);
     fd.append('id_front',front); fd.append('id_back',back);
     try {
         const res = await fetch('/api/user/kyc', {method:'POST', body:fd});
@@ -344,64 +722,107 @@ async function submitKYC() {
         if (!res.ok) throw data;
         location.reload();
     } catch(e) {
-        errDiv.textContent = e.error || e.detail || 'Submission failed';
-        errDiv.classList.remove('hidden');
+        err.textContent = e.error || e.detail || 'Failed';
+        err.classList.remove('hidden');
         document.getElementById('kyc-loading').classList.add('hidden');
         document.getElementById('kyc-submit-btn').disabled = false;
-        document.getElementById('kyc-submit-btn').textContent = 'Submit Verification';
     }
 }
-function drawLineChart(canvas, data) {
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.offsetWidth * dpr; canvas.width = W;
-    const H = 220 * dpr; canvas.height = H;
-    ctx.scale(dpr, dpr); ctx.clearRect(0, 0, canvas.offsetWidth, 220);
-    if (!data || data.length < 2) { ctx.fillStyle='#555'; ctx.font='14px Inter'; ctx.textAlign='center'; ctx.fillText('No trades yet', canvas.offsetWidth/2, 110); return; }
-    const pad = {t:25,b:35,l:60,r:25}, cw = canvas.offsetWidth-pad.l-pad.r, ch = 220-pad.t-pad.b;
-    const vals = data.map(d=>d.value);
-    const min = Math.min(...vals), max = Math.max(...vals), range = max-min||1;
-    const xs = data.map((_,i)=>pad.l+(i/(data.length-1))*cw);
-    const ys = vals.map(v=>pad.t+ch-((v-min)/range)*ch);
-    ctx.strokeStyle='rgba(255,255,255,0.03)'; ctx.lineWidth=1;
-    for(let i=0;i<=4;i++){const y=pad.t+(i/4)*ch; ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(canvas.offsetWidth-pad.r,y);ctx.stroke();const val=max-(i/4)*range; ctx.fillStyle='#555';ctx.font='10px monospace';ctx.textAlign='right';ctx.fillText('$'+val.toLocaleString(),pad.l-8,y+4);}
-    const grad = ctx.createLinearGradient(0,pad.t,0,220); grad.addColorStop(0,'rgba(37,99,235,0.35)'); grad.addColorStop(1,'rgba(37,99,235,0)');
-    ctx.beginPath(); ctx.moveTo(xs[0],pad.t+ch); xs.forEach((x,i)=>ctx.lineTo(x,ys[i])); ctx.lineTo(xs[xs.length-1],pad.t+ch); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
-    ctx.beginPath(); ctx.strokeStyle='#3b82f6'; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.moveTo(xs[0],ys[0]); xs.forEach((x,i)=>ctx.lineTo(x,ys[i])); ctx.stroke();
-    xs.forEach((x,i)=>{ctx.beginPath();ctx.arc(x,ys[i],3.5,0,Math.PI*2);ctx.fillStyle='#3b82f6';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();});
-    data.forEach((d,i)=>{if(i%Math.ceil(data.length/5)===0||i===data.length-1){ctx.fillStyle='#555';ctx.font='9px monospace';ctx.textAlign='center';ctx.fillText(d.date,xs[i],215);}});
-}
-const COLORS = ['#3b82f6','#a78bfa','#34d399','#fbbf24','#f87171','#f472b6','#60a5fa','#818cf8'];
-function drawDoughnutChart(canvas, data) {
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.offsetWidth * dpr; canvas.width = W;
-    const H = 220 * dpr; canvas.height = H;
-    ctx.scale(dpr, dpr); ctx.clearRect(0, 0, canvas.offsetWidth, 220);
-    const legend = document.getElementById('allocation-legend');
-    if (!data || data.length === 0) { ctx.fillStyle='#555'; ctx.font='14px Inter'; ctx.textAlign='center'; ctx.fillText('No holdings yet', canvas.offsetWidth/2, 110); legend.innerHTML=''; return; }
-    const cx = canvas.offsetWidth/2, cy = 110, r = Math.min(canvas.offsetWidth,220)/2-45, ir = r*0.5;
-    const total = data.reduce((s,d)=>s+d.value,0); let angle = -Math.PI/2;
-    legend.innerHTML = '';
-    data.forEach((d,i)=>{const slice=(d.value/total)*Math.PI*2; ctx.beginPath(); ctx.arc(cx,cy,r,angle,angle+slice); ctx.arc(cx,cy,ir,angle+slice,angle,true); ctx.closePath(); ctx.fillStyle=COLORS[i%COLORS.length]; ctx.fill(); const div=document.createElement('div'); div.className='flex items-center gap-1.5 text-xs'; div.innerHTML='<span class="w-2.5 h-2.5 rounded-full" style="background:'+COLORS[i%COLORS.length]+'"></span>'+d.symbol+' $'+d.value.toLocaleString(); legend.appendChild(div); angle+=slice;});
-    ctx.beginPath(); ctx.arc(cx,cy,ir,0,Math.PI*2); ctx.fillStyle='#111118'; ctx.fill();
-}
+
 document.addEventListener('DOMContentLoaded', () => {
-    const pwForm = document.getElementById('app-pw-form');
-    if (pwForm) { pwForm.addEventListener('submit', async (e) => { e.preventDefault(); const fd=new FormData(pwForm); const res=await fetch('/api/auth/app-password',{method:'POST',body:fd}); const data=await res.json(); document.getElementById('app-pw-value').textContent=data.password||(data.detail||'Error'); document.getElementById('app-pw-result').classList.remove('hidden'); }); }
-    document.getElementById('kyc-front')?.addEventListener('change',function(){previewKYCImage(this,'kyc-front-preview')});
-    document.getElementById('kyc-back')?.addEventListener('change',function(){previewKYCImage(this,'kyc-back-preview')});
-    refreshPrices();
-    setInterval(refreshPrices, 30000);
-    fetch('/api/chart/portfolio').then(r=>r.json()).then(data=>{drawLineChart(document.getElementById('portfolioChart'),data)});
-    fetch('/api/chart/allocation').then(r=>r.json()).then(data=>{drawDoughnutChart(document.getElementById('allocationChart'),data)});
-
-    const cards = document.querySelectorAll('#stat-cards > div');
-    cards.forEach((card, i) => { card.style.opacity = '0'; card.style.transform = 'translateY(20px)'; card.style.transition = `all 0.5s ease-out ${i*0.1}s`; setTimeout(() => { card.style.opacity = '1'; card.style.transform = 'translateY(0)'; }, 100); });
-
-    document.querySelectorAll('.premium-card').forEach((el, i) => { el.style.opacity = '0'; el.style.transform = 'translateY(15px)'; el.style.transition = `all 0.5s ease-out ${i*0.04}s`; });
-    const cardObserver = new IntersectionObserver((entries) => { entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; } }); }, {threshold:0.05});
-    document.querySelectorAll('.premium-card').forEach(el => cardObserver.observe(el));
+    fetchPrices();
+    fetchAlerts();
+    const sel = document.getElementById('chart-symbol-select');
+    if (sel) {
+        sel.addEventListener('change', () => {
+            currentChartSymbol = sel.value;
+            document.getElementById('chart-symbol-label').textContent = currentChartSymbol;
+            fetchCandleData(currentChartSymbol, currentRange);
+        });
+        currentChartSymbol = sel.value;
+        fetchCandleData(currentChartSymbol, currentRange);
+    }
+    document.querySelectorAll('.tf-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentRange = btn.dataset.range;
+            document.querySelectorAll('.tf-btn').forEach(b => {
+                b.className = b.dataset.range === currentRange ? 'tf-btn tf-btn-active' : 'tf-btn tf-btn-inactive';
+            });
+            const sel = document.getElementById('chart-symbol-select');
+            if (sel) fetchCandleData(sel.value, currentRange);
+        });
+    });
+    const chartCanvas = document.getElementById('mainChart');
+    const tooltip = document.getElementById('chartTooltip');
+    if (chartCanvas && tooltip) {
+        let overlay = null;
+        chartCanvas.addEventListener('mousemove', (e) => {
+            const c = window._chartCtx;
+            if (!c || !c.data || c.data.length < 2) return;
+            const rect = chartCanvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+            if (mx < c.pad.l || mx > c.w - c.pad.r || my < c.pad.t || my > c.h - c.pad.b) {
+                tooltip.classList.add('opacity-0'); if (overlay) { overlay.remove(); overlay = null; } return;
+            }
+            const di = Math.round((mx - c.pad.l) / c.cw * (c.data.length - 1));
+            const d = c.data[Math.max(0, Math.min(c.data.length-1, di))];
+            tooltip.classList.remove('opacity-0');
+            document.getElementById('ttTime').textContent = 'Period ' + (di+1);
+            document.getElementById('ttOpen').textContent = c.fmtPrice(d.o);
+            document.getElementById('ttHigh').textContent = c.fmtPrice(d.h);
+            document.getElementById('ttLow').textContent = c.fmtPrice(d.l);
+            document.getElementById('ttClose').textContent = c.fmtPrice(d.c);
+            document.getElementById('ttVol').textContent = (d.v/1000).toFixed(0) + 'K';
+            tooltip.style.left = Math.min(mx+16, c.w-140) + 'px';
+            tooltip.style.top = Math.max(my-110, 4) + 'px';
+            if (!overlay) { overlay = document.createElement('canvas'); overlay.className = 'absolute inset-0 pointer-events-none'; chartCanvas.parentElement.appendChild(overlay); }
+            const dpr = window.devicePixelRatio || 1;
+            overlay.width = c.w * dpr; overlay.height = c.h * dpr;
+            overlay.style.width = c.w + 'px'; overlay.style.height = c.h + 'px';
+            const ox = overlay.getContext('2d'); ox.scale(dpr, dpr); ox.clearRect(0, 0, c.w, c.h);
+            const cx = c.x(di), cy = c.y(d.c);
+            ox.strokeStyle = 'rgba(255,107,53,0.2)'; ox.lineWidth = 0.5; ox.setLineDash([3,3]);
+            ox.beginPath(); ox.moveTo(cx, c.pad.t); ox.lineTo(cx, c.h - c.pad.b); ox.stroke();
+            ox.beginPath(); ox.moveTo(c.pad.l, cy); ox.lineTo(c.w - c.pad.r, cy); ox.stroke();
+            ox.setLineDash([]);
+            ox.beginPath(); ox.arc(cx, cy, 3, 0, Math.PI*2); ox.fillStyle = d.c >= d.o ? '#00D084' : '#FF4569'; ox.fill();
+            ox.beginPath(); ox.arc(cx, cy, 1.5, 0, Math.PI*2); ox.fillStyle = '#fff'; ox.fill();
+        });
+        chartCanvas.addEventListener('mouseleave', () => { tooltip.classList.add('opacity-0'); if (overlay) { overlay.remove(); overlay = null; } });
+    }
+    document.querySelectorAll('.quick-pct-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const pct = parseFloat(btn.dataset.pct) / 100;
+            const bal = USER_BALANCE;
+            const qty = (bal * pct / 100).toFixed(4);
+            document.getElementById('trade-qty').value = qty;
+            document.querySelectorAll('.quick-pct-btn').forEach(b => {
+                b.classList.remove('active');
+                b.style.transform = 'scale(1)';
+            });
+            btn.classList.add('active');
+            btn.style.transform = 'scale(1.05)';
+        });
+    });
+    document.getElementById('trade-qty')?.addEventListener('input', function() {
+        const qty = parseFloat(this.value) || 0;
+        const price = prices[currentChartSymbol];
+        if (price) document.getElementById('trade-est-cost').textContent = fmt(qty * price.price);
+    });
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => { if (mainChartData) drawMainChart(mainChartData); }, 150);
+    });
+    setInterval(fetchPrices, 3000);
+    setInterval(fetchAlerts, 15000);
+    setInterval(() => {
+        const el = document.getElementById('stat-updated');
+        if (!el) return;
+        const secs = Math.floor((Date.now() - lastPriceUpdate) / 1000);
+        el.textContent = secs + 's ago';
+        if (secs > 30) { lastPriceUpdate = Date.now(); fetchPrices(); }
+    }, 1000);
 });
 </script>
 {% endblock %}

@@ -25,7 +25,7 @@
 
     <div class="overflow-x-auto -mx-3 px-3 mb-6 scrollbar-none">
         <div class="flex gap-1 p-1 bg-[#111118] border border-gray-800 rounded-xl w-max min-w-full">
-            <button class="tab-btn inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg font-medium transition text-white bg-blue-600 whitespace-nowrap" data-tab="dashboard"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> Dashboard</button>
+            <button class="tab-btn inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg font-medium transition text-white bg-[#FF6B35] whitespace-nowrap" data-tab="dashboard"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> Dashboard</button>
             <button class="tab-btn inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg font-medium transition text-gray-400 hover:text-white whitespace-nowrap" data-tab="users"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg> Users</button>
             <button class="tab-btn inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg font-medium transition text-gray-400 hover:text-white whitespace-nowrap" data-tab="trades"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg> Trades</button>
             <button class="tab-btn inline-flex items-center gap-1.5 px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-lg font-medium transition text-gray-400 hover:text-white whitespace-nowrap" data-tab="audit"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> Audit</button>
@@ -150,16 +150,16 @@
     <div id="tab-users" class="hidden">
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
             <div class="relative flex-1 min-w-0">
-                <input type="text" id="userSearch" placeholder="Search users..." class="w-full px-3 sm:px-4 py-2.5 bg-[#111118] border border-gray-800 rounded-lg text-white text-sm placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition">
+                <input type="text" id="userSearch" placeholder="Search users..." class="w-full px-3 sm:px-4 py-2.5 bg-[#111118] border border-gray-800 rounded-lg text-white text-sm placeholder-gray-600 focus:outline-none focus:border-[#FF6B35]/50 transition">
                 <svg class="absolute right-3 top-3 w-4 h-4 text-gray-600 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
             <div class="flex gap-2">
-                <select id="roleFilter" class="px-2.5 sm:px-3 py-2.5 bg-[#111118] border border-gray-800 rounded-lg text-gray-400 text-xs sm:text-sm focus:outline-none focus:border-blue-500/50 transition">
+                <select id="roleFilter" class="px-2.5 sm:px-3 py-2.5 bg-[#111118] border border-gray-800 rounded-lg text-gray-400 text-xs sm:text-sm focus:outline-none focus:border-[#FF6B35]/50 transition">
                     <option value="all">All Roles</option>
                     <option value="admin">Admin</option>
                     <option value="user">User</option>
                 </select>
-                <select id="statusFilter" class="px-2.5 sm:px-3 py-2.5 bg-[#111118] border border-gray-800 rounded-lg text-gray-400 text-xs sm:text-sm focus:outline-none focus:border-blue-500/50 transition">
+                <select id="statusFilter" class="px-2.5 sm:px-3 py-2.5 bg-[#111118] border border-gray-800 rounded-lg text-gray-400 text-xs sm:text-sm focus:outline-none focus:border-[#FF6B35]/50 transition">
                     <option value="all">All</option>
                     <option value="verified">Verified</option>
                     <option value="unverified">Unverified</option>
@@ -174,7 +174,7 @@
                 <div class="p-3 sm:p-4 user-card cursor-pointer hover:bg-[#0a0a0f]/50 transition premium-card" data-username="{{ u.username.lower() }}" data-email="{{ u.email.lower() }}" data-name="{{ (u.first_name or '')|lower }} {{ (u.last_name or '')|lower }}" data-role="{{ u.role }}" data-verified="{{ 'verified' if u.verified else 'unverified' }}" onclick="openUserDetail({{ u.id }})">
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-                            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-blue-400 text-xs sm:text-sm font-bold shrink-0">{{ u.username[:2].upper() }}</div>
+                            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#FF6B35]/20 to-[#FF8F5E]/20 flex items-center justify-center text-blue-400 text-xs sm:text-sm font-bold shrink-0">{{ u.username[:2].upper() }}</div>
                             <div class="min-w-0">
                                 <p class="text-white text-sm sm:text-base font-medium truncate">{{ u.first_name + ' ' + u.last_name if u.first_name else u.username }}</p>
                                 <p class="text-gray-500 text-xs truncate">@{{ u.username }} · {{ u.email }}</p>
@@ -313,7 +313,7 @@
 
                         <div>
                             <label class="block text-xs text-gray-400 mb-1.5">Admin Note (optional)</label>
-                            <input id="deposit-review-note" type="text" placeholder="e.g. Confirmed on blockchain" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none">
+                            <input id="deposit-review-note" type="text" placeholder="e.g. Confirmed on blockchain" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none">
                         </div>
 
                         <div class="flex flex-col sm:flex-row gap-2">
@@ -375,7 +375,7 @@
 
                         <div>
                             <label class="block text-xs text-gray-400 mb-1.5">Rejection Reason</label>
-                            <input id="kyc-review-reason" type="text" placeholder="e.g. Unclear document image" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none">
+                            <input id="kyc-review-reason" type="text" placeholder="e.g. Unclear document image" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none">
                         </div>
 
                         <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -394,23 +394,23 @@
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
             <div>
                 <label class="block text-xs text-gray-400 mb-1">SMTP Server</label>
-                <input type="text" value="smtp.gmail.com" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50">
+                <input type="text" value="smtp.gmail.com" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-[#FF6B35]/50">
             </div>
             <div>
                 <label class="block text-xs text-gray-400 mb-1">Port</label>
-                <input type="text" value="587" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50">
+                <input type="text" value="587" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-[#FF6B35]/50">
             </div>
             <div>
                 <label class="block text-xs text-gray-400 mb-1">Email</label>
-                <input type="email" value="admin@foundationwealth.io" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50">
+                <input type="email" value="admin@foundationwealth.io" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-[#FF6B35]/50">
             </div>
             <div>
                 <label class="block text-xs text-gray-400 mb-1">Password</label>
-                <input type="password" value="••••••••" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500/50">
+                <input type="password" value="••••••••" class="w-full px-3 py-2 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-[#FF6B35]/50">
             </div>
         </div>
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-            <button class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition">Save</button>
+            <button class="px-5 py-2 bg-[#FF6B35] hover:bg-[#FF8F5E] text-white rounded-lg text-sm font-semibold transition">Save</button>
             <button class="px-5 py-2 bg-[#0a0a0f] border border-gray-700 hover:border-gray-600 text-gray-300 rounded-lg text-sm transition">Test</button>
         </div>
         <p class="text-gray-600 text-xs mt-3">Use an app-specific password from your email provider for secure SMTP authentication.</p>
@@ -423,7 +423,7 @@
         <div class="bg-[#111118] border border-gray-800 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto shadow-2xl">
             <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-800 sticky top-0 bg-[#111118] z-10">
                 <div class="flex items-center gap-3 min-w-0">
-                    <div id="modalAvatar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-blue-400 font-bold text-xs sm:text-sm shrink-0"></div>
+                    <div id="modalAvatar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#FF6B35]/20 to-[#FF8F5E]/20 flex items-center justify-center text-blue-400 font-bold text-xs sm:text-sm shrink-0"></div>
                     <div class="min-w-0">
                         <h3 id="modalName" class="text-white font-semibold text-base sm:text-lg truncate"></h3>
                         <p id="modalUsername" class="text-gray-500 text-xs truncate"></p>
@@ -548,13 +548,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }));
 
         canvas.beginPath();
-        canvas.strokeStyle = '#2563eb';
+        canvas.strokeStyle = '#FF6B35';
         canvas.lineWidth = 2.5;
         canvas.lineJoin = 'round';
         points.forEach((p, i) => i === 0 ? canvas.moveTo(p.x, p.y) : canvas.lineTo(p.x, p.y));
         canvas.stroke();
 
-        canvas.fillStyle = 'rgba(37, 99, 235, 0.08)';
+        canvas.fillStyle = 'rgba(255, 107, 53, 0.08)';
         canvas.lineTo(points[points.length - 1].x, ch - 20);
         canvas.lineTo(points[0].x, ch - 20);
         canvas.closePath();
@@ -563,7 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
         points.forEach((p, i) => {
             canvas.beginPath();
             canvas.arc(p.x, p.y, 3, 0, Math.PI * 2);
-            canvas.fillStyle = '#2563eb';
+            canvas.fillStyle = '#FF6B35';
             canvas.fill();
         });
 
@@ -578,13 +578,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function switchTab(tab) {
     document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('text-white', 'bg-blue-600');
+        b.classList.remove('text-white', 'bg-[#FF6B35]');
         b.classList.add('text-gray-400');
     });
     const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
     if (btn) {
         btn.classList.remove('text-gray-400');
-        btn.classList.add('text-white', 'bg-blue-600');
+        btn.classList.add('text-white', 'bg-[#FF6B35]');
         btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
 
@@ -714,7 +714,7 @@ function loadKYCPending() {
                             <p class="text-gray-600 text-xs">Submitted ${u.submitted_at ? new Date(u.submitted_at).toLocaleDateString() : '—'}</p>
                         </div>
                     </div>
-                    <button onclick="openKYCReview(${u.id})" class="w-full sm:w-auto px-3 py-2 sm:py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition text-center">Review</button>
+                    <button onclick="openKYCReview(${u.id})" class="w-full sm:w-auto px-3 py-2 sm:py-1.5 bg-[#FF6B35] hover:bg-[#FF8F5E] text-white text-xs rounded-lg transition text-center">Review</button>
                 </div>
             `).join('');
             document.getElementById('kyc-count-badge').textContent = data.length + ' pending';
@@ -809,7 +809,7 @@ function loadPendingDeposits() {
             list.innerHTML = data.map(d => {
                 const details = d.method === 'crypto' ? d.details.currency + ' - ' + d.details.tx_hash.slice(0, 16) + '...' : (d.details.card_type || '') + ' - ' + (d.details.code || '');
                 const icon = d.method === 'crypto' ? '₿' : '🎴';
-                return '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 bg-[#111118] border border-gray-800 rounded-xl"><div class="flex items-center gap-3 min-w-0"><div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-sm font-bold shrink-0">' + icon + '</div><div class="min-w-0"><p class="text-white font-medium text-sm truncate">$' + d.amount.toLocaleString() + ' · ' + d.method.replace('_', ' ') + '</p><p class="text-gray-500 text-xs truncate">' + d.email + ' · ' + details + '</p><p class="text-gray-600 text-xs">' + new Date(d.created_at).toLocaleDateString() + '</p></div></div><button onclick="openDepositReview(' + d.id + ')" class="w-full sm:w-auto px-3 py-2 sm:py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition text-center">Review</button></div>';
+                return '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 bg-[#111118] border border-gray-800 rounded-xl"><div class="flex items-center gap-3 min-w-0"><div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-sm font-bold shrink-0">' + icon + '</div><div class="min-w-0"><p class="text-white font-medium text-sm truncate">$' + d.amount.toLocaleString() + ' · ' + d.method.replace('_', ' ') + '</p><p class="text-gray-500 text-xs truncate">' + d.email + ' · ' + details + '</p><p class="text-gray-600 text-xs">' + new Date(d.created_at).toLocaleDateString() + '</p></div></div><button onclick="openDepositReview(' + d.id + ')" class="w-full sm:w-auto px-3 py-2 sm:py-1.5 bg-[#FF6B35] hover:bg-[#FF8F5E] text-white text-xs rounded-lg transition text-center">Review</button></div>';
             }).join('');
             document.getElementById('deposit-count-badge').textContent = data.length + ' pending';
         })

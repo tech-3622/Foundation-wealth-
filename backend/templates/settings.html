@@ -2,6 +2,7 @@
 {% block title %}Settings - Foundation Wealth{% endblock %}
 {% block content %}
 <div class="min-h-screen bg-[#0a0a0f]">
+    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2" style="display:none"></div>
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         <div class="mb-8">
             <h1 class="text-2xl sm:text-3xl font-bold text-white">Settings</h1>
@@ -14,11 +15,11 @@
             <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
                 <h3 class="text-white font-semibold mb-4">Notification Preferences</h3>
                 <form id="notif-form" class="space-y-3">
-                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">Trade Confirmations</p><p class="text-gray-500 text-xs">Get notified when a trade is executed</p></div><input type="checkbox" name="trade_confirmations" class="w-4 h-4 rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-800"></label>
-                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">Price Alerts</p><p class="text-gray-500 text-xs">When watched symbols hit your targets</p></div><input type="checkbox" name="price_alerts" class="w-4 h-4 rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-800"></label>
-                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">KYC Updates</p><p class="text-gray-500 text-xs">When your verification status changes</p></div><input type="checkbox" name="kyc_updates" class="w-4 h-4 rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-800"></label>
-                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">Marketing &amp; Offers</p><p class="text-gray-500 text-xs">Product updates and promotions</p></div><input type="checkbox" name="marketing" class="w-4 h-4 rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-800"></label>
-                    <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-blue-500/20">Save Preferences</button>
+                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">Trade Confirmations</p><p class="text-gray-500 text-xs">Get notified when a trade is executed</p></div><input type="checkbox" name="trade_confirmations" class="w-4 h-4 rounded border-gray-600 text-[#FF6B35] focus:ring-[#FF6B35] bg-gray-800"></label>
+                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">Price Alerts</p><p class="text-gray-500 text-xs">When watched symbols hit your targets</p></div><input type="checkbox" name="price_alerts" class="w-4 h-4 rounded border-gray-600 text-[#FF6B35] focus:ring-[#FF6B35] bg-gray-800"></label>
+                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">KYC Updates</p><p class="text-gray-500 text-xs">When your verification status changes</p></div><input type="checkbox" name="kyc_updates" class="w-4 h-4 rounded border-gray-600 text-[#FF6B35] focus:ring-[#FF6B35] bg-gray-800"></label>
+                    <label class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30 cursor-pointer hover:border-gray-700/50 transition"><div><p class="text-white text-sm font-medium">Marketing &amp; Offers</p><p class="text-gray-500 text-xs">Product updates and promotions</p></div><input type="checkbox" name="marketing" class="w-4 h-4 rounded border-gray-600 text-[#FF6B35] focus:ring-[#FF6B35] bg-gray-800"></label>
+                    <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#FF8F5E] hover:to-[#FF6B35] text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-[#FF6B35]/30">Save Preferences</button>
                 </form>
             </div>
         </div>
@@ -33,7 +34,7 @@
 
                 <div id="2fa-setup-section">
                     <div id="2fa-setup-step1">
-                        <button id="btn-setup-2fa" class="px-5 py-2.5 bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-violet-500/20">Enable 2FA</button>
+                        <button id="btn-setup-2fa" class="px-5 py-2.5 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#FF8F5E] hover:to-[#FF6B35] text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-[#FF6B35]/30">Enable 2FA</button>
                     </div>
                     <div id="2fa-setup-step2" class="hidden space-y-4">
                         <div class="p-4 bg-[#0a0a0f] rounded-xl border border-gray-800/50">
@@ -48,8 +49,8 @@
                             <p class="text-gray-500 text-xs">Enter the 6-digit code from your authenticator app to enable 2FA:</p>
                         </div>
                         <div class="flex gap-3">
-                            <input id="2fa-token" type="text" placeholder="000000" maxlength="6" class="w-36 px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-mono text-center text-2xl tracking-widest focus:border-violet-500 outline-none transition">
-                            <button id="btn-verify-2fa" class="px-5 py-2.5 bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-violet-500/20">Verify</button>
+                            <input id="2fa-token" type="text" placeholder="000000" maxlength="6" class="w-36 px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-mono text-center text-2xl tracking-widest focus:border-[#FF6B35] outline-none transition">
+                            <button id="btn-verify-2fa" class="px-5 py-2.5 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#FF8F5E] hover:to-[#FF6B35] text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-[#FF6B35]/30">Verify</button>
                             <button id="btn-cancel-2fa" class="px-4 py-2.5 bg-[#111118] border border-gray-700 text-gray-400 rounded-lg text-sm hover:text-white transition">Cancel</button>
                         </div>
                         <div id="2fa-error" class="hidden text-red-400 text-xs"></div>
@@ -75,10 +76,10 @@
             <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-white font-semibold">App Passwords</h3>
-                    <button onclick="document.getElementById('app-pw-form').classList.toggle('hidden')" class="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transition flex items-center gap-1 shadow-lg shadow-blue-500/20"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Generate</button>
+                    <button onclick="document.getElementById('app-pw-form').classList.toggle('hidden')" class="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#FF8F5E] hover:to-[#FF6B35] text-white transition flex items-center gap-1 shadow-lg shadow-[#FF6B35]/30"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Generate</button>
                 </div>
                 <div id="app-pw-result" class="hidden mb-4 p-4 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20 rounded-xl"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/10 flex items-center justify-center shrink-0"><svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div><div><p class="text-yellow-400 text-sm font-semibold">App Password Generated</p><p id="app-pw-value" class="text-white font-mono text-base sm:text-lg mt-1 select-all bg-[#0a0a0f] px-3 py-2 rounded-lg"></p></div></div><p class="text-gray-500 text-xs mt-2 ml-13">Save this now. You won't be able to see it again.</p></div>
-                <form id="app-pw-form" class="hidden space-y-3 mb-4 p-4 bg-[#0a0a0f] rounded-xl border border-gray-800/50"><div class="flex gap-3 items-end"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1.5 font-medium">Name</label><input type="text" name="name" placeholder="e.g. TradingView, API Bot" required class="w-full px-3 py-2.5 bg-[#111118] border border-gray-700 rounded-lg text-white text-sm focus:border-yellow-500 outline-none transition"></div><button type="submit" class="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-lg text-sm font-semibold transition shadow-lg shadow-blue-500/20 whitespace-nowrap">Generate</button></div></form>
+                <form id="app-pw-form" class="hidden space-y-3 mb-4 p-4 bg-[#0a0a0f] rounded-xl border border-gray-800/50"><div class="flex gap-3 items-end"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1.5 font-medium">Name</label><input type="text" name="name" placeholder="e.g. TradingView, API Bot" required class="w-full px-3 py-2.5 bg-[#111118] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition"></div><button type="submit" class="px-4 py-2.5 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#FF8F5E] hover:to-[#FF6B35] text-white rounded-lg text-sm font-semibold transition shadow-lg shadow-[#FF6B35]/30 whitespace-nowrap">Generate</button></div></form>
                 {% if app_passwords %}
                 <div class="space-y-2">{% for ap in app_passwords %}<div class="flex items-center justify-between p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/30"><div><p class="text-white text-sm font-medium">{{ ap.name }}</p><p class="text-gray-600 text-xs">Created {{ ap.created_at.strftime('%b %d, %Y') if ap.created_at else '--' }}</p></div><span class="text-xs px-2 py-0.5 rounded-full bg-gray-500/10 text-gray-400">Active</span></div>{% endfor %}</div>
                 {% else %}<p class="text-gray-600 text-sm">No app passwords yet.</p>{% endif %}
@@ -103,7 +104,26 @@
     </div>
 </div>
 
+<style>
+.toast { position: fixed; top: 80px; right: 20px; z-index: 999; display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-radius: 12px; backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; font-size: 0.85rem; min-width: 280px; border: 1px solid rgba(255,255,255,0.08); font-family: 'Inter', sans-serif; }
+.toast-success { background: rgba(0,208,132,0.15); color: #00D084; border-color: rgba(0,208,132,0.2); }
+.toast-error { background: rgba(255,69,105,0.15); color: #FF4569; border-color: rgba(255,69,105,0.2); }
+@keyframes toastIn { 0% { opacity: 0; transform: translateX(100%) scale(0.9); } 100% { opacity: 1; transform: translateX(0) scale(1); } }
+@keyframes toastOut { 0% { opacity: 1; } 100% { opacity: 0; transform: translateX(100%); } }
+</style>
+
 <script>
+function showToast(msg, type) {
+    const c = document.getElementById('toast-container');
+    if (!c) return;
+    c.style.display = 'flex';
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.innerHTML = msg;
+    c.appendChild(t);
+    setTimeout(() => { t.style.animation = 'toastOut 0.3s ease-in forwards'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const showMsg = (msg, ok) => {
         const el = document.getElementById('settings-msg');
@@ -138,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch('/api/user/settings', {method:'PUT', body:fd});
         const data = await res.json();
         showMsg(data.error || data.message || 'Saved', !data.error);
+        showToast(data.error || 'Saved', !data.error ? 'success' : 'error');
     });
 
     document.getElementById('btn-setup-2fa')?.addEventListener('click', async () => {

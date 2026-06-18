@@ -423,6 +423,8 @@ async def dashboard_page(request: Request, db: Session = Depends(get_db)):
         (p.avg_price * p.quantity) for p in portfolios if p.quantity > 0
     )
 
+    all_prices = generate_market_prices()
+
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "user": user,
@@ -433,6 +435,9 @@ async def dashboard_page(request: Request, db: Session = Depends(get_db)):
         "watchlists": watchlists,
         "win_rate": win_rate,
         "portfolio_value": portfolio_value,
+        "symbol_logos": SYMBOL_LOGOS,
+        "market_prices": all_prices,
+        "all_symbols": MARKET_SYMBOLS,
     })
 
 
@@ -446,6 +451,7 @@ async def wallet_page(request: Request, db: Session = Depends(get_db)):
         "request": request,
         "user": user,
         "deposits": deposits,
+        "symbol_logos": SYMBOL_LOGOS,
     })
 
 
@@ -1531,7 +1537,7 @@ async def portfolio_page(request: Request, db: Session = Depends(get_db)):
         user = login_required(request, db)
     except HTTPException:
         return RedirectResponse(url="/login")
-    return templates.TemplateResponse("portfolio.html", {"request": request, "user": user})
+    return templates.TemplateResponse("portfolio.html", {"request": request, "user": user, "symbol_logos": SYMBOL_LOGOS})
 
 # ---------------------------------------------------------------------------
 # API: Profile
@@ -1548,7 +1554,7 @@ async def get_profile(request: Request, db: Session = Depends(get_db)):
         "username": user.username,
         "first_name": user.first_name or "",
         "last_name": user.last_name or "",
-        "phone": user.phone or "",
+        "phone": ("" if user.phone == user.email else user.phone) or "",
         "country": user.country or "",
         "photo_url": photo_url,
         "created_at": user.created_at.isoformat() if user.created_at else None,

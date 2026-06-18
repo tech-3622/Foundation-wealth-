@@ -1,6 +1,15 @@
 {% extends "layout.html" %}
 {% block title %}Profile - Foundation Wealth{% endblock %}
 {% block content %}
+<style>
+.toast { position: fixed; top: 80px; right: 20px; z-index: 999; display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-radius: 12px; backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; font-size: 0.85rem; min-width: 280px; border: 1px solid rgba(255,255,255,0.08); font-family: 'Inter', sans-serif; }
+.toast-success { background: rgba(0,208,132,0.15); color: #00D084; border-color: rgba(0,208,132,0.2); }
+.toast-error { background: rgba(255,69,105,0.15); color: #FF4569; border-color: rgba(255,69,105,0.2); }
+@keyframes toastIn { 0% { opacity: 0; transform: translateX(100%) scale(0.9); } 100% { opacity: 1; transform: translateX(0) scale(1); } }
+@keyframes toastOut { 0% { opacity: 1; } 100% { opacity: 0; transform: translateX(100%); } }
+input, select { padding: 12px 16px !important; }
+</style>
+<div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2" style="display:none"></div>
 <div class="min-h-screen bg-[#0a0a0f]">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         <div class="mb-8">
@@ -9,15 +18,15 @@
         </div>
 
         <div class="grid lg:grid-cols-3 gap-6 mb-8">
-            <div class="p-0.5 bg-gradient-to-br from-blue-500/20 via-transparent to-purple-500/20 rounded-xl premium-card">
+            <div class="p-0.5 bg-gradient-to-br from-[#FF6B35]/20 via-transparent to-[#FF8F5E]/20 rounded-xl premium-card">
                 <div class="p-6 bg-[#111118] rounded-[10px] text-center">
                     <div class="relative inline-block">
-                        <div id="avatar-container" class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4 overflow-hidden cursor-pointer hover:opacity-80 transition" onclick="document.getElementById('photo-input').click()">
+                        <div id="avatar-container" class="w-24 h-24 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF8F5E] flex items-center justify-center mx-auto mb-4 overflow-hidden cursor-pointer hover:opacity-80 transition" onclick="document.getElementById('photo-input').click()">
                             <span id="avatar-initials" class="text-white text-3xl font-bold">--</span>
                             <img id="avatar-img" class="hidden w-full h-full object-cover absolute inset-0">
                         </div>
                         <input id="photo-input" type="file" accept="image/*" class="hidden" onchange="uploadPhoto(this)">
-                        <div id="photo-uploading" class="hidden absolute inset-0 bg-black/60 rounded-full flex items-center justify-center"><div class="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div></div>
+                        <div id="photo-uploading" class="hidden absolute inset-0 bg-black/60 rounded-full flex items-center justify-center"><div class="w-5 h-5 border-2 border-[#FF6B35] border-t-transparent rounded-full animate-spin"></div></div>
                     </div>
                     <h2 id="profile-name" class="text-white font-semibold text-lg">Loading...</h2>
                     <p id="profile-email" class="text-gray-500 text-sm"></p>
@@ -27,36 +36,36 @@
                 </div>
             </div>
 
-            <div class="lg:col-span-2 p-0.5 bg-gradient-to-br from-blue-500/20 via-transparent to-purple-500/20 rounded-xl premium-card">
+            <div class="lg:col-span-2 p-0.5 bg-gradient-to-br from-[#FF6B35]/20 via-transparent to-[#FF8F5E]/20 rounded-xl premium-card">
                 <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
                     <h3 class="text-white font-semibold mb-4">Personal Information</h3>
                     <div id="profile-msg" class="hidden p-3 rounded-lg text-sm mb-4"></div>
                     <form id="profile-form" class="space-y-4">
                         <div class="grid sm:grid-cols-2 gap-4">
-                            <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">First Name</label><input name="first_name" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none transition"></div>
-                            <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Last Name</label><input name="last_name" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none transition"></div>
+                            <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">First Name</label><input name="first_name" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition"></div>
+                            <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Last Name</label><input name="last_name" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition"></div>
                         </div>
-                        <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Username</label><input name="username" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none transition"></div>
-                        <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Email</label><input value="{{ user.email }}" disabled class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700/50 rounded-lg text-gray-400 text-sm cursor-not-allowed"></div>
+                        <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Username</label><input name="username" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition"></div>
+                        <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Email</label><input value="{{ user.email }}" disabled class="w-full bg-[#0a0a0f] border border-gray-700/50 rounded-lg text-gray-400 text-sm cursor-not-allowed"></div>
                         <div class="grid sm:grid-cols-2 gap-4">
-                            <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Phone</label><input name="phone" placeholder="+1 (555) 000-0000" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none transition"></div>
-                            <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Country</label><select name="country" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none transition"><option value="">Select...</option><option value="US">United States</option><option value="GB">United Kingdom</option><option value="CA">Canada</option><option value="AU">Australia</option><option value="DE">Germany</option><option value="FR">France</option><option value="JP">Japan</option><option value="SG">Singapore</option><option value="HK">Hong Kong</option><option value="AE">UAE</option><option value="CH">Switzerland</option><option value="IN">India</option><option value="BR">Brazil</option><option value="NG">Nigeria</option><option value="ZA">South Africa</option><option value="KE">Kenya</option><option value="GH">Ghana</option><option value="EG">Egypt</option></select></div>
+                            <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Phone</label><input name="phone" placeholder="+1 (555) 000-0000" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition"></div>
+                            <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Country</label><select name="country" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition"><option value="">Select...</option><option value="US">United States</option><option value="GB">United Kingdom</option><option value="CA">Canada</option><option value="AU">Australia</option><option value="DE">Germany</option><option value="FR">France</option><option value="JP">Japan</option><option value="SG">Singapore</option><option value="HK">Hong Kong</option><option value="AE">UAE</option><option value="CH">Switzerland</option><option value="IN">India</option><option value="BR">Brazil</option><option value="NG">Nigeria</option><option value="ZA">South Africa</option><option value="KE">Kenya</option><option value="GH">Ghana</option><option value="EG">Egypt</option></select></div>
                         </div>
-                        <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-blue-500/20">Save Changes</button>
+                        <button type="submit" id="save-btn" class="px-5 py-2.5 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#FF8F5E] hover:to-[#FF6B35] text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-[#FF6B35]/30 flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Save Changes</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <div class="p-0.5 bg-gradient-to-br from-amber-500/20 via-transparent to-amber-500/10 rounded-xl premium-card mb-8">
+        <div class="p-0.5 bg-gradient-to-br from-[#FF6B35]/20 via-transparent to-amber-500/10 rounded-xl premium-card mb-8">
             <div class="p-4 sm:p-6 bg-[#111118] rounded-[10px]">
                 <h3 class="text-white font-semibold mb-4">Change Password</h3>
                 <div id="pw-msg" class="hidden p-3 rounded-lg text-sm mb-4"></div>
                 <form id="pw-form" class="space-y-4 max-w-md">
-                    <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Current Password</label><input type="password" name="current_password" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-amber-500 outline-none transition"></div>
-                    <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">New Password</label><input type="password" name="new_password" required minlength="6" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-amber-500 outline-none transition"></div>
-                    <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Confirm New Password</label><input type="password" name="confirm_password" required class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-amber-500 outline-none transition"></div>
-                    <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-amber-500/20">Update Password</button>
+                    <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Current Password</label><input type="password" name="current_password" required class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition"></div>
+                    <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">New Password</label><input type="password" name="new_password" required minlength="6" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition"></div>
+                    <div><label class="block text-xs text-gray-400 mb-1.5 font-medium">Confirm New Password</label><input type="password" name="confirm_password" required class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none transition"></div>
+                    <button type="submit" id="pw-btn" class="px-5 py-2.5 bg-gradient-to-r from-[#FF6B35] to-[#E55A2B] hover:from-[#FF8F5E] hover:to-[#FF6B35] text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-[#FF6B35]/30 flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m9.364-7.364A9 9 0 1112 3a9 9 0 017.364 4.636z"/></svg> Update Password</button>
                 </form>
             </div>
         </div>
@@ -70,6 +79,15 @@
 </div>
 
 <script>
+function showToast(msg, type) {
+    const c = document.getElementById('toast-container');
+    c.style.display = 'flex';
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.innerHTML = msg;
+    c.appendChild(t);
+    setTimeout(() => { t.style.animation = 'toastOut 0.3s ease-in forwards'; setTimeout(() => t.remove(), 300); }, 3000);
+}
 document.addEventListener('DOMContentLoaded', () => {
     const showMsg = (el, msg, ok) => { el.textContent = msg; el.className = 'p-3 rounded-lg text-sm mb-4 ' + (ok ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'); el.classList.remove('hidden'); };
     fetch('/api/user/profile').then(r=>r.json()).then(d => {
@@ -90,31 +108,52 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('avatar-img').classList.remove('hidden');
             document.getElementById('avatar-initials').classList.add('hidden');
         }
-        document.querySelectorAll('#profile-form [name]').forEach(el => { const v = d[el.name]; if (v !== undefined) el.value = v; });
+        document.querySelectorAll('#profile-form [name]').forEach(el => {
+            const v = d[el.name];
+            if (v !== undefined && v !== null) el.value = v;
+        });
     });
     document.getElementById('profile-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('save-btn');
+        const username = document.querySelector('[name="username"]').value.trim();
+        const phone = document.querySelector('[name="phone"]').value.trim();
+        if (!username) { showToast('Username is required', 'error'); return; }
+        if (username.length < 3) { showToast('Username must be at least 3 characters', 'error'); return; }
+        btn.disabled = true; btn.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Saving...';
         const fd = new FormData(e.target);
         const res = await fetch('/api/user/profile', {method:'PUT', body:fd});
         const data = await res.json();
-        const msg = document.getElementById('profile-msg');
-        showMsg(msg, data.error || data.message || 'Saved', !data.error);
-        if (!data.error) setTimeout(() => { msg.classList.add('hidden'); location.reload(); }, 1500);
+        btn.disabled = false; btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Save Changes';
+        if (data.error) { showToast(data.error, 'error'); return; }
+        showToast('Profile updated successfully!', 'success');
+        setTimeout(() => location.reload(), 1200);
     });
     document.getElementById('pw-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('pw-btn');
         const fd = new FormData(e.target);
-        if (fd.get('new_password') !== fd.get('confirm_password')) { showMsg(document.getElementById('pw-msg'), 'Passwords do not match', false); return; }
+        const cur = fd.get('current_password');
+        const np = fd.get('new_password');
+        const cp = fd.get('confirm_password');
+        if (!cur || !np || !cp) { showToast('All password fields are required', 'error'); return; }
+        if (np.length < 6) { showToast('New password must be at least 6 characters', 'error'); return; }
+        if (np !== cp) { showToast('New passwords do not match', 'error'); return; }
+        btn.disabled = true; btn.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Updating...';
         const res = await fetch('/api/user/change-password', {method:'POST', body:fd});
         const data = await res.json();
-        const msg = document.getElementById('pw-msg');
-        showMsg(msg, data.error || data.message || 'Password changed', !data.error);
-        if (!data.error) { e.target.reset(); setTimeout(() => msg.classList.add('hidden'), 3000); }
+        btn.disabled = false; btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0H10m9.364-7.364A9 9 0 1112 3a9 9 0 017.364 4.636z"/></svg> Update Password';
+        if (data.error) { showToast(data.error, 'error'); return; }
+        showToast('Password changed successfully!', 'success');
+        e.target.reset();
     });
 });
 async function uploadPhoto(input) {
     const f = input.files[0];
     if (!f) return;
+    const allowed = ['image/jpeg','image/png','image/gif','image/webp'];
+    if (!allowed.includes(f.type)) { showToast('Only JPG, PNG, GIF, WebP allowed', 'error'); return; }
+    if (f.size > 2 * 1024 * 1024) { showToast('File must be under 2MB', 'error'); return; }
     const fd = new FormData();
     fd.append('photo', f);
     document.getElementById('photo-uploading').classList.remove('hidden');
@@ -125,6 +164,9 @@ async function uploadPhoto(input) {
         document.getElementById('avatar-img').src = data.photo_url;
         document.getElementById('avatar-img').classList.remove('hidden');
         document.getElementById('avatar-initials').classList.add('hidden');
+        showToast('Photo updated!', 'success');
+    } else {
+        showToast(data.error || 'Upload failed', 'error');
     }
 }
 </script>

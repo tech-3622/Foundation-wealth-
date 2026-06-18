@@ -1,191 +1,307 @@
 {% extends "layout.html" %}
 {% block title %}Wallet — Foundation Wealth{% endblock %}
 {% block content %}
-<div class="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+<style>
+:root { --orange: #FF6B35; --orange-light: #FF8F5E; --orange-dark: #E55A2B; }
+.toast { position: fixed; top: 80px; right: 20px; z-index: 999; display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-radius: 12px; backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; font-size: 0.85rem; min-width: 280px; border: 1px solid rgba(255,255,255,0.08); font-family: 'Inter', sans-serif; }
+.toast-success { background: rgba(0,208,132,0.15); color: #00D084; border-color: rgba(0,208,132,0.2); }
+.toast-error { background: rgba(255,69,105,0.15); color: #FF4569; border-color: rgba(255,69,105,0.2); }
+.toast-info { background: rgba(255,107,53,0.15); color: #FF6B35; border-color: rgba(255,107,53,0.2); }
+@keyframes toastIn { 0% { opacity: 0; transform: translateX(100%) scale(0.9); } 100% { opacity: 1; transform: translateX(0) scale(1); } }
+@keyframes toastOut { 0% { opacity: 1; } 100% { opacity: 0; transform: translateX(100%); } }
+input, select { padding: 12px 16px !important; }
+.ticker-wrap { overflow: hidden; white-space: nowrap; position: relative; height: 36px; }
+.ticker-track { display: inline-flex; animation: marquee 35s linear infinite; }
+.ticker-track:hover { animation-play-state: paused; }
+.ticker-item { display: inline-flex; align-items: center; gap: 6px; padding: 0 20px; font-size: 0.8rem; border-right: 1px solid rgba(255,255,255,0.06); white-space: nowrap; }
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.amount-btn { padding: 8px 14px; font-size: 0.7rem; font-weight: 700; border-radius: 6px; background: rgba(255,107,53,0.1); color: #FF6B35; border: 1px solid rgba(255,107,53,0.15); cursor: pointer; transition: all 0.15s ease; font-family: 'JetBrains Mono', monospace; }
+.amount-btn:hover { background: rgba(255,107,53,0.25); border-color: #FF6B35; transform: scale(1.05); }
+.amount-btn.active { background: #FF6B35; color: white; border-color: #FF6B35; box-shadow: 0 2px 8px rgba(255,107,53,0.3); }
+.deposit-log-card { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-radius: 12px; transition: all 0.2s ease; gap: 12px; }
+.deposit-log-card:hover { background: rgba(255,107,53,0.03); }
+.deposit-log-card + .deposit-log-card { border-top: 1px solid rgba(255,255,255,0.04); }
+</style>
+<div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2" style="display:none"></div>
+<div class="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto dash-bg">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div class="flex items-center gap-3">
-            <div class="stat-icon bg-blue-500/15 icon-glow">
-                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+            <div class="w-10 h-10 rounded-xl bg-[#FF6B35]/15 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             </div>
             <div>
                 <h1 class="text-2xl font-bold text-white">Wallet</h1>
-                <p class="text-gray-500 text-sm">Deposit funds and track your transactions</p>
+                <p class="text-gray-500 text-sm">Deposit funds <span class="text-gray-600">&middot;</span> <span id="live-time-wallet" class="text-[#FF6B35] text-xs"></span></p>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <a href="/invest" class="px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-gray-500 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg> Markets</a>
-            <a href="/portfolio" class="px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-gray-500 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Portfolio</a>
-            <a href="/dashboard" class="px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-gray-500 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> Dashboard</a>
+            <a href="/dashboard" class="px-3 py-2 text-xs text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-[#FF6B35]/30 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> Dashboard</a>
+            <a href="/portfolio" class="px-3 py-2 text-xs text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-[#FF6B35]/30 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Portfolio</a>
         </div>
     </div>
 
-    <div class="decorative-line mb-6"></div>
+    <div class="dash-card mb-6">
+        <div class="orange-bar"></div>
+        <div class="ticker-wrap py-1.5 px-2" id="ticker-wrap-wallet"><div class="ticker-track" id="ticker-track-wallet"></div></div>
+    </div>
 
     {% set approved_total = deposits|selectattr('status', 'equalto', 'approved')|sum(attribute='amount') %}
+    {% set pending_deps = deposits|selectattr('status', 'equalto', 'pending')|list %}
+    {% set approved_deps = deposits|selectattr('status', 'equalto', 'approved')|list %}
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="p-5 bg-[#111118] border border-gray-800 rounded-xl premium-card premium-card-glow relative overflow-hidden">
-            <div class="ambient-orb w-40 h-40 bg-blue-500/5 -top-20 -right-20"></div>
-            <div class="flex items-start justify-between mb-2"><p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Available Balance</p><div class="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center"><svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div></div>
-            <p class="text-white text-2xl font-bold number-glow">${{ "{:,.2f}".format(user.balance or 0) }}</p>
-            <p class="text-gray-600 text-xs mt-1">Ready to trade</p>
-        </div>
-        <div class="p-5 bg-[#111118] border border-gray-800 rounded-xl premium-card premium-card-glow relative overflow-hidden">
-            <div class="ambient-orb w-40 h-40 bg-emerald-500/5 -top-20 -right-20"></div>
-            <div class="flex items-start justify-between mb-2"><p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Total Deposited</p><div class="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg></div></div>
-            <p class="text-white text-2xl font-bold number-glow">${{ "{:,.2f}".format(approved_total) }}</p>
-            <p class="text-gray-600 text-xs mt-1">{{ deposits|selectattr('status', 'equalto', 'approved')|list|length }} completed deposits</p>
-        </div>
-        <div class="p-5 bg-[#111118] border border-gray-800 rounded-xl premium-card premium-card-glow relative overflow-hidden">
-            <div class="ambient-orb w-40 h-40 bg-amber-500/5 -top-20 -right-20"></div>
-            <div class="flex items-start justify-between mb-2"><p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Pending Approval</p><div class="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center"><svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div></div>
-            <div class="flex items-center gap-2 mt-1">
-                <p class="text-amber-400 text-2xl font-bold">{{ deposits|selectattr('status', 'equalto', 'pending')|list|length }}</p>
-                {% if deposits|selectattr('status', 'equalto', 'pending')|list|length > 0 %}
-                <span class="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
-                {% endif %}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div class="stat-card">
+            <div class="accent-line" style="background:linear-gradient(90deg,#FF6B35,#FF8F5E)"></div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+                <span class="stat-label">Available Balance</span>
+                <div class="w-8 h-8 rounded-lg bg-[#FF6B35]/10 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
             </div>
-            <p class="text-gray-600 text-xs mt-1">Awaiting team review</p>
+            <div class="stat-value text-white">${{ "{:,.2f}".format(user.balance or 0) }}</div>
+            <div class="text-xs text-gray-500 mt-1">Ready to trade</div>
+        </div>
+            <div class="stat-card">
+                <div class="accent-line" style="background:linear-gradient(90deg,#FF6B35,#FF8F5E)"></div>
+                <div class="flex items-start justify-between gap-2 mb-2">
+                    <span class="stat-label">Total Deposited</span>
+                    <div class="w-8 h-8 rounded-lg bg-[#FF6B35]/10 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    </div>
+            </div>
+            <div class="stat-value text-white">${{ "{:,.2f}".format(approved_total) }}</div>
+            <div class="text-xs text-gray-500 mt-1">{{ approved_deps|length }} completed deposits</div>
+        </div>
+        <div class="stat-card">
+            <div class="accent-line" style="background:linear-gradient(90deg,#FF6B35,#FF8F5E)"></div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+                <span class="stat-label">Pending</span>
+                <div class="w-8 h-8 rounded-lg bg-[#FF6B35]/10 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="stat-value" style="color:#FF6B35">{{ pending_deps|length }}</div>
+                {% if pending_deps|length > 0 %}<span class="w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse-orange"></span>{% endif %}
+            </div>
+            <div class="text-xs text-gray-500 mt-1">Awaiting review</div>
+        </div>
+            <div class="stat-card">
+                <div class="accent-line" style="background:linear-gradient(90deg,#FF6B35,#FF8F5E)"></div>
+                <div class="flex items-start justify-between gap-2 mb-2">
+                    <span class="stat-label">Pending Value</span>
+                    <div class="w-8 h-8 rounded-lg bg-[#FF6B35]/10 flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                    </div>
+            </div>
+            <div class="stat-value text-white">${{ "{:,.2f}".format(pending_deps|sum(attribute='amount')) }}</div>
+            <div class="text-xs text-gray-500 mt-1">In {{ pending_deps|length }} deposit(s)</div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
-        <div class="lg:col-span-3 bg-[#111118] border border-gray-800 rounded-2xl p-5 sm:p-6 premium-card relative overflow-hidden">
-            <div class="ambient-orb w-60 h-60 bg-blue-500/3 -top-20 -right-20"></div>
-
-            <div id="deposit-form" class="space-y-5">
-
-                <div class="flex items-center gap-4 text-sm">
-                    <div class="flex items-center gap-2"><div id="step-1-dot" class="step-circle active">1</div><span id="step-1-label" class="text-blue-400 font-medium text-xs">Method</span></div>
-                    <div class="w-12 h-px bg-gray-700"></div>
-                    <div class="flex items-center gap-2"><div id="step-2-dot" class="step-circle inactive">2</div><span id="step-2-label" class="text-gray-500 text-xs">Details</span></div>
-                    <div class="w-12 h-px bg-gray-700"></div>
-                    <div class="flex items-center gap-2"><div id="step-3-dot" class="step-circle inactive">3</div><span id="step-3-label" class="text-gray-500 text-xs">Confirm</span></div>
-                </div>
-
-                <h3 class="text-white font-semibold text-base">New Deposit</h3>
-                <p class="text-gray-500 text-xs -mt-3">All deposits are reviewed by our team before funds are credited.</p>
-
-                <div class="flex gap-2 p-1 bg-[#0a0a0f] rounded-xl">
-                    <button onclick="switchDepositMethod('crypto')" id="dm-crypto" class="flex-1 px-3 py-2.5 text-sm rounded-lg font-medium transition text-white bg-blue-600">Crypto</button>
-                    <button onclick="switchDepositMethod('gift_card')" id="dm-gift_card" class="flex-1 px-3 py-2.5 text-sm rounded-lg font-medium transition text-gray-400 hover:text-white">Gift Card</button>
-                </div>
-
-                <div id="deposit-fields-crypto" class="space-y-3">
-                    <div><label class="block text-xs text-gray-400 mb-1">Currency</label><select id="dep-currency" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none"><option value="BTC">Bitcoin (BTC)</option><option value="ETH">Ethereum (ETH)</option><option value="USDT">Tether (USDT)</option><option value="SOL">Solana (SOL)</option></select></div>
-                    <div><label class="block text-xs text-gray-400 mb-1">Transaction Hash / TXID</label><input id="dep-tx-hash" type="text" placeholder="Paste your transaction hash here" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-mono focus:border-blue-500 outline-none"><p class="text-gray-600 text-xs mt-1">Send your crypto to the provided address and paste the TXID above.</p></div>
-                </div>
-
-                <div id="deposit-fields-gift_card" class="hidden space-y-3">
-                    <div><label class="block text-xs text-gray-400 mb-1">Card Type</label><select id="dep-card-type" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-blue-500 outline-none"><option value="amazon">Amazon</option><option value="steam">Steam</option><option value="itunes">iTunes / Apple</option><option value="google_play">Google Play</option><option value="visa">Visa Prepaid</option><option value="mastercard">Mastercard Prepaid</option><option value="other">Other</option></select></div>
-                    <div><label class="block text-xs text-gray-400 mb-1">Card Code / PIN</label><input id="dep-card-code" type="text" placeholder="Enter the 16-digit card code" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-mono focus:border-blue-500 outline-none"><p class="text-gray-600 text-xs mt-1">Scratch off the back of your card and enter the code exactly as shown.</p></div>
-                </div>
-
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Amount (USD)</label>
-                    <div class="flex gap-2 mb-2">
-                        <button onclick="setDepositAmount(100)" class="flex-1 px-2 py-1.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-xs hover:border-gray-500 transition">$100</button>
-                        <button onclick="setDepositAmount(500)" class="flex-1 px-2 py-1.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-xs hover:border-gray-500 transition">$500</button>
-                        <button onclick="setDepositAmount(1000)" class="flex-1 px-2 py-1.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-xs hover:border-gray-500 transition">$1K</button>
-                        <button onclick="setDepositAmount(5000)" class="flex-1 px-2 py-1.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-xs hover:border-gray-500 transition">$5K</button>
-                        <button onclick="setDepositAmount(10000)" class="flex-1 px-2 py-1.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-xs hover:border-gray-500 transition">$10K</button>
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
+        <div class="lg:col-span-3 dash-card">
+            <div class="orange-bar"></div>
+            <div class="dash-card-body">
+                <div id="deposit-form" class="space-y-5">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-2"><div id="step-1-dot" class="step-circle active">1</div><span id="step-1-label" class="text-[#FF6B35] font-medium text-xs">Method</span></div>
+                        <div class="w-12 h-px bg-gray-700"></div>
+                        <div class="flex items-center gap-2"><div id="step-2-dot" class="step-circle inactive">2</div><span id="step-2-label" class="text-gray-500 text-xs">Details</span></div>
+                        <div class="w-12 h-px bg-gray-700"></div>
+                        <div class="flex items-center gap-2"><div id="step-3-dot" class="step-circle inactive">3</div><span id="step-3-label" class="text-gray-500 text-xs">Confirm</span></div>
                     </div>
-                    <input id="deposit-amount" type="number" value="100" step="10" min="1" class="w-full px-3 py-2.5 bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-bold focus:border-blue-500 outline-none">
+
+                    <h3 class="text-white font-semibold text-base">New Deposit</h3>
+                    <p class="text-gray-500 text-xs -mt-3">All deposits are reviewed by our team before funds are credited.</p>
+
+                    <div class="flex gap-2 p-1 bg-[#0a0a0f] rounded-xl">
+                        <button onclick="switchDepositMethod('crypto')" id="dm-crypto" class="flex-1 px-3 py-2.5 text-sm rounded-lg font-medium transition text-white bg-[#FF6B35]">Crypto</button>
+                        <button onclick="switchDepositMethod('gift_card')" id="dm-gift_card" class="flex-1 px-3 py-2.5 text-sm rounded-lg font-medium transition text-gray-400 hover:text-white">Gift Card</button>
+                    </div>
+
+                    <div id="deposit-fields-crypto" class="space-y-3">
+                        <div><label class="block text-xs text-gray-400 mb-1">Currency</label><select id="dep-currency" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none"><option value="BTC">Bitcoin (BTC)</option><option value="ETH">Ethereum (ETH)</option><option value="USDT">Tether (USDT)</option><option value="SOL">Solana (SOL)</option></select></div>
+                        <div><label class="block text-xs text-gray-400 mb-1">Transaction Hash / TXID</label><input id="dep-tx-hash" type="text" placeholder="Paste your transaction hash here" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-mono focus:border-[#FF6B35] outline-none"><p class="text-gray-600 text-xs mt-1">Send your crypto to the provided address and paste the TXID above.</p></div>
+                    </div>
+
+                    <div id="deposit-fields-gift_card" class="hidden space-y-3">
+                        <div><label class="block text-xs text-gray-400 mb-1">Card Type</label><select id="dep-card-type" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none"><option value="amazon">Amazon</option><option value="steam">Steam</option><option value="itunes">iTunes / Apple</option><option value="google_play">Google Play</option><option value="visa">Visa Prepaid</option><option value="mastercard">Mastercard Prepaid</option><option value="other">Other</option></select></div>
+                        <div><label class="block text-xs text-gray-400 mb-1">Card Code / PIN</label><input id="dep-card-code" type="text" placeholder="Enter the 16-digit card code" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-mono focus:border-[#FF6B35] outline-none"><p class="text-gray-600 text-xs mt-1">Scratch off the back of your card and enter the code exactly as shown.</p></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Amount (USD)</label>
+                        <div class="flex gap-1.5 mb-2 flex-wrap">
+                            <button type="button" onclick="setDepositAmount(100)" class="amount-btn">$100</button>
+                            <button type="button" onclick="setDepositAmount(500)" class="amount-btn">$500</button>
+                            <button type="button" onclick="setDepositAmount(1000)" class="amount-btn">$1K</button>
+                            <button type="button" onclick="setDepositAmount(5000)" class="amount-btn">$5K</button>
+                            <button type="button" onclick="setDepositAmount(10000)" class="amount-btn">$10K</button>
+                            <button type="button" onclick="setDepositAmount(25000)" class="amount-btn">$25K</button>
+                        </div>
+                        <input id="deposit-amount" type="number" value="100" step="10" min="1" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-bold focus:border-[#FF6B35] outline-none">
+                    </div>
+
+                    <div id="deposit-error" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"></div>
+                    <div id="deposit-loading" class="hidden text-center py-4">
+                        <div class="w-6 h-6 border-2 border-[#FF6B35] border-t-transparent rounded-full animate-spin mx-auto"></div>
+                        <p class="text-gray-400 text-xs mt-2">Processing your deposit request...</p>
+                    </div>
+
+                    <button onclick="submitDeposit()" id="deposit-submit-btn" class="orange-btn w-full"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg> Submit Deposit Request</button>
                 </div>
 
-                <div id="deposit-error" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"></div>
-                <div id="deposit-loading" class="hidden text-center py-4">
-                    <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    <p class="text-gray-400 text-xs mt-2">Processing your deposit request...</p>
+                <div id="deposit-success" class="hidden text-center py-4">
+                    <div class="celebrate inline-flex w-20 h-20 rounded-full bg-green-500/20 items-center justify-center mb-4">
+                        <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <h3 class="text-white font-semibold text-xl mb-1">Deposit Submitted</h3>
+                    <p id="deposit-success-id" class="text-[#FF6B35] font-mono text-sm mb-2"></p>
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <span class="text-gray-400 text-sm">Amount:</span>
+                        <span id="deposit-success-amount" class="text-white font-bold text-lg"></span>
+                    </div>
+                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#FF6B35]/10 border border-[#FF6B35]/20 rounded-full text-[#FF6B35] text-sm mb-4">
+                        <span class="w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse-orange"></span>
+                        Pending Review
+                    </div>
+                    <p class="text-gray-500 text-xs mb-6 max-w-sm mx-auto">Your deposit will be reviewed by our team. You'll be notified once the funds are credited to your account.</p>
+                    <div class="flex gap-3 justify-center">
+                        <button onclick="location.reload()" class="px-5 py-2 bg-[#FF6B35] hover:bg-[#FF8F5E] text-white text-sm font-semibold rounded-lg transition">View History</button>
+                        <button onclick="resetDepositForm()" class="px-5 py-2 bg-[#0a0a0f] border border-gray-700 hover:border-gray-500 text-gray-300 text-sm rounded-lg transition">New Deposit</button>
+                    </div>
                 </div>
-
-                <button onclick="submitDeposit()" id="deposit-submit-btn" class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold rounded-xl transition text-sm">Submit Deposit Request</button>
             </div>
-
-            <div id="deposit-success" class="hidden text-center py-4">
-                <div class="celebrate inline-flex w-20 h-20 rounded-full bg-green-500/20 items-center justify-center mb-4">
-                    <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <h3 class="text-white font-semibold text-xl mb-1">Deposit Submitted</h3>
-                <p id="deposit-success-id" class="text-blue-400 font-mono text-sm mb-2"></p>
-                <div class="flex items-center justify-center gap-2 mb-1">
-                    <span class="text-gray-400 text-sm">Amount:</span>
-                    <span id="deposit-success-amount" class="text-white font-bold text-lg"></span>
-                </div>
-                <div class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-400 text-sm mb-4">
-                    <span class="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
-                    Pending Review
-                </div>
-                <p class="text-gray-500 text-xs mb-6 max-w-sm mx-auto">Your deposit will be reviewed by our team. You'll be notified once the funds are credited to your account.</p>
-                <div class="flex gap-3 justify-center">
-                    <button onclick="location.reload()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition">View History</button>
-                    <button onclick="resetDepositForm()" class="px-5 py-2 bg-[#0a0a0f] border border-gray-700 hover:border-gray-500 text-gray-300 text-sm rounded-lg transition">New Deposit</button>
-                </div>
-            </div>
-
         </div>
 
-        <div class="lg:col-span-2 bg-[#111118] border border-gray-800 rounded-2xl p-5 sm:p-6 premium-card">
-            <h3 class="text-white font-semibold text-base mb-4">Transaction History</h3>
-            {% if deposits %}
-            <div class="space-y-1 max-h-96 overflow-y-auto pr-1">
-                {% for d in deposits %}
-                <div class="timeline-item {{ d.status }} py-3 pl-7">
-                    <div class="flex items-center justify-between">
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-2">
-                                <span class="text-white text-sm font-semibold">${{ "{:,.2f}".format(d.amount) }}</span>
-                                <span class="text-gray-500 text-xs capitalize">{{ d.method.replace('_', ' ') }}</span>
+        <div class="lg:col-span-2 dash-card">
+            <div class="dash-card-header">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#FF6B35] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <span class="text-white font-semibold text-sm">Transaction History</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] font-medium">{{ deposits|length }}</span>
+                </div>
+            </div>
+            <div class="dash-card-body p-3" id="deposit-history">
+                {% if deposits %}
+                <div class="space-y-1 max-h-96 overflow-y-auto pr-1" id="deposit-list">
+                    {% for d in deposits %}
+                    <div class="deposit-log-card" data-id="{{ d.id }}" data-status="{{ d.status }}">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-9 h-9 rounded-lg {% if d.status == 'approved' %}bg-green-500/10{% elif d.status == 'rejected' %}bg-red-500/10{% else %}bg-[#FF6B35]/10{% endif %} flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 {% if d.status == 'approved' %}text-green-400{% elif d.status == 'rejected' %}text-red-400{% else %}text-[#FF6B35]{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{% if d.status == 'approved' %}M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z{% elif d.status == 'rejected' %}M6 18L18 6M6 6l12 12{% else %}M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z{% endif %}"/></svg>
                             </div>
-                            <p class="text-gray-600 text-xs mt-0.5">
-                                {% if d.method == 'crypto' and d.method_details.currency is defined %}{{ d.method_details.currency }}{% elif d.method_details.card_type is defined %}{{ d.method_details.card_type }}{% endif %}
-                                &middot; {{ d.created_at.strftime('%b %d, %Y at %I:%M %p') if d.created_at else '' }}
-                            </p>
-                            {% if d.admin_note %}<p class="text-gray-600 text-xs mt-0.5 italic">Note: {{ d.admin_note }}</p>{% endif %}
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-white text-sm font-semibold">${{ "{:,.2f}".format(d.amount) }}</span>
+                                    <span class="text-gray-500 text-xs capitalize">{{ d.method.replace('_', ' ') }}</span>
+                                </div>
+                                <p class="text-gray-600 text-xs mt-0.5">
+                                    {% if d.method == 'crypto' and d.method_details.currency is defined %}{{ d.method_details.currency }}{% elif d.method_details.card_type is defined %}{{ d.method_details.card_type }}{% endif %}
+                                    &middot; {{ d.created_at.strftime('%b %d, %Y at %I:%M %p') if d.created_at else '' }}
+                                </p>
+                                {% if d.admin_note %}<p class="text-gray-600 text-xs mt-0.5 italic">Note: {{ d.admin_note }}</p>{% endif %}
+                            </div>
                         </div>
-                        <span class="shrink-0 ml-2 px-2.5 py-1 text-xs font-semibold rounded-full
-                            {% if d.status == 'approved' %}status-approved
-                            {% elif d.status == 'rejected' %}status-rejected
-                            {% else %}status-pending{% endif %}">
+                        <span class="shrink-0 ml-2 px-2.5 py-1 text-xs font-semibold rounded-full {% if d.status == 'approved' %}status-approved{% elif d.status == 'rejected' %}status-rejected{% else %}status-pending{% endif %}">
                             {% if d.status == 'approved' %}Approved{% elif d.status == 'rejected' %}Rejected{% else %}Pending{% endif %}
                         </span>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+                {% else %}
+                <div class="text-center py-12">
+                    <div class="w-14 h-14 rounded-2xl bg-[#FF6B35]/5 flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-7 h-7 text-[#FF6B35]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <p class="text-gray-500 text-sm font-medium">No transactions yet</p>
+                    <p class="text-gray-600 text-xs mt-1">Use the deposit form to make your first deposit</p>
+                </div>
+                {% endif %}
             </div>
-            {% else %}
-            <div class="text-center py-10">
-                <svg class="w-12 h-12 text-gray-700 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <p class="text-gray-500 text-sm">No transactions yet</p>
-                <p class="text-gray-600 text-xs mt-1">Use the deposit form to make your first deposit</p>
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>
 
 <script>
+const LOGOS = {{ symbol_logos | tojson }};
+let prices = {};
 let currentDepositMethod = 'crypto';
+
+function showToast(msg, type) {
+    const c = document.getElementById('toast-container');
+    c.style.display = 'flex';
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.innerHTML = msg;
+    c.appendChild(t);
+    setTimeout(() => { t.style.animation = 'toastOut 0.3s ease-in forwards'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+function fmt(v) {
+    if (v >= 1000) return '$' + v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    if (v >= 1) return '$' + v.toFixed(2);
+    return '$' + v.toFixed(4);
+}
+
+function updateTickerWallet() {
+    const track = document.getElementById('ticker-track-wallet');
+    if (!track) return;
+    const items = Object.entries(prices);
+    if (items.length === 0) return;
+    let html = '';
+    for (let rep = 0; rep < 2; rep++) {
+        for (const [sym, info] of items) {
+            const up = info.change_pct >= 0;
+            const color = up ? '#00D084' : '#FF4569';
+            const arrow = up ? '&#9650;' : '&#9660;';
+            const logo = LOGOS[sym];
+            const logoColor = logo ? logo.color : '#666';
+            html += '<div class="ticker-item">';
+            html += '<svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="' + logoColor + '">' + (logo && logo.path ? '<path d="' + logo.path + '"/>' : '<circle cx="12" cy="12" r="11" fill="none" stroke="' + logoColor + '" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="8" font-weight="bold" fill="' + logoColor + '">' + sym[0] + '</text>') + '</svg>';
+            html += '<span class="text-white font-mono font-semibold text-xs">' + sym + '</span>';
+            html += '<span class="text-white font-mono text-xs">' + fmt(info.price) + '</span>';
+            html += '<span class="font-mono text-xs font-semibold" style="color:' + color + '">' + arrow + ' ' + (info.change_pct >= 0 ? '+' : '') + info.change_pct.toFixed(2) + '%</span>';
+            html += '</div>';
+        }
+    }
+    track.innerHTML = html;
+}
+
+async function fetchPricesWallet() {
+    try {
+        const r = await fetch('/api/market/prices');
+        prices = await r.json();
+        updateTickerWallet();
+    } catch(e) {}
+}
 
 function switchDepositMethod(method) {
     currentDepositMethod = method;
-    document.querySelectorAll('[id^="dm-"]').forEach(b => { b.classList.remove('text-white', 'bg-blue-600'); b.classList.add('text-gray-400'); });
+    document.querySelectorAll('[id^="dm-"]').forEach(b => { b.classList.remove('text-white', 'bg-[#FF6B35]'); b.classList.add('text-gray-400'); });
     document.getElementById('dm-' + method).classList.remove('text-gray-400');
-    document.getElementById('dm-' + method).classList.add('text-white', 'bg-blue-600');
+    document.getElementById('dm-' + method).classList.add('text-white', 'bg-[#FF6B35]');
     document.getElementById('deposit-fields-crypto').classList.toggle('hidden', method !== 'crypto');
     document.getElementById('deposit-fields-gift_card').classList.toggle('hidden', method !== 'gift_card');
     updateSteps(1);
 }
 
-function setDepositAmount(v) { document.getElementById('deposit-amount').value = v; }
+function setDepositAmount(v) {
+    document.getElementById('deposit-amount').value = v;
+    document.querySelectorAll('.amount-btn').forEach(b => {
+        b.classList.remove('active');
+        if (parseFloat(b.textContent.replace(/[$,K]/g,'')) * (b.textContent.includes('K') ? 1000 : 1) === v) b.classList.add('active');
+    });
+}
 
 function updateSteps(step) {
     document.getElementById('step-1-dot').className = 'step-circle ' + (step >= 1 ? (step > 1 ? 'done' : 'active') : 'inactive');
     document.getElementById('step-2-dot').className = 'step-circle ' + (step >= 2 ? (step > 2 ? 'done' : 'active') : 'inactive');
     document.getElementById('step-3-dot').className = 'step-circle ' + (step >= 3 ? (step > 3 ? 'done' : 'active') : 'inactive');
-    document.getElementById('step-1-label').className = (step >= 1 ? 'text-blue-400' : 'text-gray-500') + ' font-medium text-xs';
-    document.getElementById('step-2-label').className = (step >= 2 ? 'text-blue-400' : 'text-gray-500') + ' text-xs';
-    document.getElementById('step-3-label').className = (step >= 3 ? 'text-blue-400' : 'text-gray-500') + ' text-xs';
+    document.getElementById('step-1-label').className = (step >= 1 ? 'text-[#FF6B35]' : 'text-gray-500') + ' font-medium text-xs';
+    document.getElementById('step-2-label').className = (step >= 2 ? 'text-[#FF6B35]' : 'text-gray-500') + ' text-xs';
+    document.getElementById('step-3-label').className = (step >= 3 ? 'text-[#FF6B35]' : 'text-gray-500') + ' text-xs';
 }
 
 function resetDepositForm() {
@@ -203,15 +319,12 @@ function submitDeposit() {
     const loadingDiv = document.getElementById('deposit-loading');
     const btn = document.getElementById('deposit-submit-btn');
     errDiv.classList.add('hidden');
-
     const method = currentDepositMethod;
     const amount = parseFloat(document.getElementById('deposit-amount').value) || 0;
     if (amount <= 0) { errDiv.textContent = 'Enter a valid amount'; errDiv.classList.remove('hidden'); return; }
-
     const fd = new FormData();
     fd.append('method', method);
     fd.append('amount', amount);
-
     if (method === 'crypto') {
         const currency = document.getElementById('dep-currency').value;
         const txHash = document.getElementById('dep-tx-hash').value.trim();
@@ -225,11 +338,9 @@ function submitDeposit() {
         fd.append('card_type', cardType);
         fd.append('card_code', cardCode);
     }
-
     updateSteps(2);
     loadingDiv.classList.remove('hidden');
     btn.disabled = true;
-
     fetch('/api/user/deposit', {method:'POST', body:fd})
         .then(r => { if (!r.ok) return r.json().then(d => { throw d; }); return r.json(); })
         .then(d => {
@@ -238,11 +349,13 @@ function submitDeposit() {
             document.getElementById('deposit-success').classList.remove('hidden');
             document.getElementById('deposit-success-id').textContent = 'Deposit #' + d.id;
             document.getElementById('deposit-success-amount').textContent = '$' + amount.toLocaleString();
+            showToast('Deposit #' + d.id + ' submitted for $' + amount.toLocaleString(), 'success');
         })
         .catch(e => {
             errDiv.textContent = e.error || 'Submission failed';
             errDiv.classList.remove('hidden');
             updateSteps(1);
+            showToast(e.error || 'Deposit failed', 'error');
         })
         .finally(() => {
             loadingDiv.classList.add('hidden');
@@ -250,10 +363,38 @@ function submitDeposit() {
         });
 }
 
+async function refreshDepositStatus() {
+    try {
+        const r = await fetch('/api/user/deposits/status');
+        const updates = await r.json();
+        if (!updates || updates.length === 0) return;
+        const list = document.getElementById('deposit-list');
+        if (!list) return;
+        updates.forEach(u => {
+            const el = list.querySelector('[data-id="' + u.id + '"]');
+            if (!el) return;
+            const oldStatus = el.dataset.status;
+            if (u.status !== oldStatus) {
+                el.dataset.status = u.status;
+                const badge = el.querySelector('.shrink-0.ml-2');
+                if (badge) {
+                    badge.className = 'shrink-0 ml-2 px-2.5 py-1 text-xs font-semibold rounded-full ' + (u.status === 'approved' ? 'status-approved' : u.status === 'rejected' ? 'status-rejected' : 'status-pending');
+                    badge.textContent = u.status.charAt(0).toUpperCase() + u.status.slice(1);
+                }
+                showToast('Deposit #' + u.id + ' ' + u.status + '!', u.status === 'approved' ? 'success' : 'error');
+            }
+        });
+    } catch(e) {}
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.premium-card').forEach((el, i) => { el.style.opacity = '0'; el.style.transform = 'translateY(15px)'; el.style.transition = `all 0.5s ease-out ${i*0.08}s`; });
-    const observer = new IntersectionObserver((entries) => { entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; } }); }, {threshold:0.05});
-    document.querySelectorAll('.premium-card').forEach(el => observer.observe(el));
+    document.getElementById('live-time-wallet').textContent = new Date().toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    setInterval(() => {
+        document.getElementById('live-time-wallet').textContent = new Date().toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    }, 1000);
+    fetchPricesWallet();
+    setInterval(fetchPricesWallet, 5000);
+    setInterval(refreshDepositStatus, 15000);
 });
 </script>
 {% endblock %}
