@@ -1,0 +1,318 @@
+{% extends "layout.html" %}
+{% block title %}Withdraw — Foundation Wealth{% endblock %}
+{% block content %}
+<style>
+:root { --orange: #FF6B35; --orange-light: #FF8F5E; --orange-dark: #E55A2B; }
+.toast { position: fixed; top: 80px; right: 20px; z-index: 999; display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-radius: 12px; backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; font-size: 0.85rem; min-width: 280px; border: 1px solid rgba(255,255,255,0.08); font-family: 'Inter', sans-serif; }
+.toast-success { background: rgba(0,208,132,0.15); color: #00D084; border-color: rgba(0,208,132,0.2); }
+.toast-error { background: rgba(255,69,105,0.15); color: #FF4569; border-color: rgba(255,69,105,0.2); }
+.toast-info { background: rgba(255,107,53,0.15); color: #FF6B35; border-color: rgba(255,107,53,0.2); }
+@keyframes toastIn { 0% { opacity: 0; transform: translateX(100%) scale(0.9); } 100% { opacity: 1; transform: translateX(0) scale(1); } }
+@keyframes toastOut { 0% { opacity: 1; } 100% { opacity: 0; transform: translateX(100%); } }
+input, select { padding: 12px 16px !important; }
+.withdraw-card { background: rgba(21, 26, 45, 0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; transition: all 0.2s ease; }
+.withdraw-card:hover { border-color: rgba(255,107,53,0.15); }
+.withdraw-log { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 12px; transition: all 0.2s ease; gap: 12px; }
+.withdraw-log:hover { background: rgba(255,107,53,0.03); }
+.withdraw-log + .withdraw-log { border-top: 1px solid rgba(255,255,255,0.04); }
+</style>
+<div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2" style="display:none"></div>
+<div class="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto dash-bg">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-white">Withdraw</h1>
+                <p class="text-gray-500 text-sm">Withdraw funds to your personal wallet</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="/wallet" class="px-3 py-2 text-xs text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-[#FF6B35]/30 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg> Wallet</a>
+            <a href="/dashboard" class="px-3 py-2 text-xs text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-[#FF6B35]/30 transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> Dashboard</a>
+        </div>
+    </div>
+
+    <!-- KYC / Direct Deposit Checks -->
+    {% set has_direct = withdrawals_data.has_direct_deposit if withdrawals_data else false %}
+    {% set kyc_ok = user.kyc_status == 'verified' %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <div class="lg:col-span-2">
+            <div class="dash-card">
+                <div class="orange-bar"></div>
+                <div class="dash-card-body">
+                    <!-- Requirement checks -->
+                    {% if not kyc_ok or not has_direct %}
+                    <div class="space-y-3 mb-6">
+                        {% if not kyc_ok %}
+                        <div class="p-3 bg-red-500/5 border border-red-500/10 rounded-xl flex items-start gap-3">
+                            <svg class="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                            <div>
+                                <p class="text-red-400 text-sm font-medium">KYC Verification Required</p>
+                                <p class="text-gray-500 text-xs mt-0.5">You must complete KYC verification before you can withdraw funds. <a href="/profile" class="text-[#FF6B35] hover:underline">Complete KYC</a></p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if not has_direct %}
+                        <div class="p-3 bg-red-500/5 border border-red-500/10 rounded-xl flex items-start gap-3">
+                            <svg class="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                            <div>
+                                <p class="text-red-400 text-sm font-medium">Direct Deposit Required</p>
+                                <p class="text-gray-500 text-xs mt-0.5">You must make a direct deposit of <strong class="text-white">$11 or more</strong> before you can withdraw. <a href="/wallet" class="text-[#FF6B35] hover:underline">Make a deposit</a></p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div id="withdraw-form-container">
+                        <div class="flex items-center gap-4 text-sm mb-5">
+                            <div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-[#FF6B35] flex items-center justify-center text-xs font-bold text-white">1</div><span class="text-[#FF6B35] font-medium text-xs">Details</span></div>
+                            <div class="w-12 h-px bg-gray-700"></div>
+                            <div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-gray-800 text-gray-500 flex items-center justify-center text-xs font-bold">2</div><span class="text-gray-500 text-xs">Confirm</span></div>
+                            <div class="w-12 h-px bg-gray-700"></div>
+                            <div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-gray-800 text-gray-500 flex items-center justify-center text-xs font-bold">3</div><span class="text-gray-500 text-xs">Done</span></div>
+                        </div>
+
+                        <h3 class="text-white font-semibold text-base mb-1">Request Withdrawal</h3>
+                        <p class="text-gray-500 text-xs mb-5">Withdrawals are reviewed by our team before processing.</p>
+
+                        <div class="space-y-4" id="withdraw-form">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Available Balance</label>
+                                <div class="text-white font-mono font-bold text-2xl">${{ "{:,.2f}".format(user.balance or 0) }}</div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Amount (USD)</label>
+                                <input id="wd-amount" type="number" value="100" step="10" min="1" max="{{ user.balance or 0 }}" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-bold focus:border-[#FF6B35] outline-none">
+                                <p class="text-gray-600 text-xs mt-1">Enter the amount you wish to withdraw in USD.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Currency</label>
+                                <select id="wd-currency" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none">
+                                    <option value="BTC">Bitcoin (BTC)</option>
+                                    <option value="ETH">Ethereum (ETH)</option>
+                                    <option value="USDT">Tether (USDT)</option>
+                                    <option value="SOL">Solana (SOL)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Your Wallet Address</label>
+                                <input id="wd-address" type="text" placeholder="Enter your personal wallet address" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-mono focus:border-[#FF6B35] outline-none">
+                                <p class="text-gray-600 text-xs mt-1">Make sure this is the correct address for the selected currency.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Receipt / Proof (optional)</label>
+                                <input id="wd-receipt" type="file" accept="image/*,.pdf" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#FF6B35]/10 file:text-[#FF6B35] hover:file:bg-[#FF6B35]/20 focus:border-[#FF6B35] outline-none">
+                            </div>
+
+                            <div id="wd-error" class="hidden p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm"></div>
+                            <div id="wd-loading" class="hidden text-center py-4">
+                                <div class="w-6 h-6 border-2 border-[#FF6B35] border-t-transparent rounded-full animate-spin mx-auto"></div>
+                                <p class="text-gray-400 text-xs mt-2">Submitting withdrawal request...</p>
+                            </div>
+
+                            <button onclick="submitWithdraw()" id="wd-submit-btn" {% if not kyc_ok or not has_direct %}disabled{% endif %} class="orange-btn w-full {% if not kyc_ok or not has_direct %}opacity-50 cursor-not-allowed{% endif %}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                                Submit Withdrawal Request
+                            </button>
+                        </div>
+
+                        <div id="wd-success" class="hidden text-center py-4">
+                            <div class="celebrate inline-flex w-20 h-20 rounded-full bg-green-500/20 items-center justify-center mb-4">
+                                <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <h3 class="text-white font-semibold text-xl mb-1">Withdrawal Submitted</h3>
+                            <p id="wd-success-id" class="text-[#FF6B35] font-mono text-sm mb-2"></p>
+                            <div class="flex items-center justify-center gap-2 mb-1">
+                                <span class="text-gray-400 text-sm">Amount:</span>
+                                <span id="wd-success-amount" class="text-white font-bold text-lg"></span>
+                            </div>
+                            <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#FF6B35]/10 border border-[#FF6B35]/20 rounded-full text-[#FF6B35] text-sm mb-4">
+                                <span class="w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse-orange"></span>
+                                Pending Review
+                            </div>
+                            <p class="text-gray-500 text-xs mb-6 max-w-sm mx-auto">Your withdrawal will be reviewed by our team. You'll be notified once it's processed.</p>
+                            <div class="flex gap-3 justify-center">
+                                <button onclick="location.reload()" class="px-5 py-2 bg-[#FF6B35] hover:bg-[#FF8F5E] text-white text-sm font-semibold rounded-lg transition">View History</button>
+                                <button onclick="resetWithdrawForm()" class="px-5 py-2 bg-[#0a0a0f] border border-gray-700 hover:border-gray-500 text-gray-300 text-sm rounded-lg transition">New Withdrawal</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-1">
+            <div class="dash-card h-full">
+                <div class="dash-card-header">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-[#FF6B35] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                        <span class="text-white font-semibold text-sm">Requirements</span>
+                    </div>
+                </div>
+                <div class="dash-card-body p-4">
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-7 h-7 rounded-lg {% if kyc_ok %}bg-green-500/10{% else %}bg-red-500/10{% endif %} flex items-center justify-center shrink-0 mt-0.5">
+                                {% if kyc_ok %}
+                                <svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                {% else %}
+                                <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <p class="text-white text-xs font-semibold">KYC Verified</p>
+                                <p class="text-gray-500 text-[10px] mt-0.5">{% if kyc_ok %}Verified{% else %}Not verified{% endif %}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-7 h-7 rounded-lg {% if has_direct %}bg-green-500/10{% else %}bg-red-500/10{% endif %} flex items-center justify-center shrink-0 mt-0.5">
+                                {% if has_direct %}
+                                <svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                {% else %}
+                                <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <p class="text-white text-xs font-semibold">Direct Deposit ($11+)</p>
+                                <p class="text-gray-500 text-[10px] mt-0.5">{% if has_direct %}Completed{% else %}Not yet{% endif %}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-yellow-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                                <svg class="w-3.5 h-3.5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-white text-xs font-semibold">Balance</p>
+                                <p class="text-gray-500 text-[10px] font-mono mt-0.5">${{ "{:,.2f}".format(user.balance or 0) }}</p>
+                            </div>
+                        </div>
+                        {% if not kyc_ok or not has_direct %}
+                        <div class="mt-4 p-3 bg-gray-800/30 rounded-xl">
+                            <p class="text-gray-400 text-xs">To unlock withdrawals, you need:</p>
+                            <ul class="text-gray-500 text-[10px] mt-2 space-y-1 list-disc list-inside">
+                                {% if not kyc_ok %}<li>Complete KYC verification in <a href="/profile" class="text-[#FF6B35]">Profile</a></li>{% endif %}
+                                {% if not has_direct %}<li>Make a direct deposit of $11+ in <a href="/wallet" class="text-[#FF6B35]">Wallet</a></li>{% endif %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal History -->
+    <div class="dash-card mb-8">
+        <div class="dash-card-header">
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#FF6B35] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <span class="text-white font-semibold text-sm">Withdrawal History</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-[#FF6B35]/10 text-[#FF6B35] font-medium">{{ withdrawals|length }}</span>
+            </div>
+        </div>
+        <div class="dash-card-body p-3">
+            {% if withdrawals %}
+            <div class="space-y-1 max-h-96 overflow-y-auto pr-1">
+                {% for w in withdrawals %}
+                <div class="withdraw-log">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-lg {% if w.status == 'approved' %}bg-green-500/10{% elif w.status == 'rejected' %}bg-red-500/10{% else %}bg-yellow-500/10{% endif %} flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 {% if w.status == 'approved' %}text-green-400{% elif w.status == 'rejected' %}text-red-400{% else %}text-yellow-400{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{% if w.status == 'approved' %}M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z{% elif w.status == 'rejected' %}M6 18L18 6M6 6l12 12{% else %}M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z{% endif %}"/></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-white text-sm font-semibold">${{ "{:,.2f}".format(w.amount) }}</span>
+                                <span class="text-gray-500 text-xs font-mono">{{ w.currency }}</span>
+                            </div>
+                            <p class="text-gray-600 text-xs mt-0.5 truncate max-w-[200px]">{{ w.wallet_address }}</p>
+                            <p class="text-gray-600 text-xs mt-0.5">{{ w.created_at.strftime('%b %d, %Y at %I:%M %p') if w.created_at else '' }}</p>
+                            {% if w.admin_note %}<p class="text-gray-600 text-xs mt-0.5 italic">Note: {{ w.admin_note }}</p>{% endif %}
+                        </div>
+                    </div>
+                    <span class="shrink-0 ml-2 px-2.5 py-1 text-xs font-semibold rounded-full {% if w.status == 'approved' %}status-approved{% elif w.status == 'rejected' %}status-rejected{% else %}status-pending{% endif %}">
+                        {{ w.status|capitalize }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <div class="w-14 h-14 rounded-2xl bg-[#FF6B35]/5 flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-7 h-7 text-[#FF6B35]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                </div>
+                <p class="text-gray-500 text-sm font-medium">No withdrawals yet</p>
+                <p class="text-gray-600 text-xs mt-1">Use the form above to request a withdrawal</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function showToast(msg, type) {
+    const c = document.getElementById('toast-container');
+    c.style.display = 'flex';
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.innerHTML = msg;
+    c.appendChild(t);
+    setTimeout(() => { t.style.animation = 'toastOut 0.3s ease-in forwards'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+function resetWithdrawForm() {
+    document.getElementById('withdraw-form').classList.remove('hidden');
+    document.getElementById('wd-success').classList.add('hidden');
+    document.getElementById('wd-error').classList.add('hidden');
+    document.getElementById('wd-amount').value = 100;
+    document.getElementById('wd-address').value = '';
+}
+
+function submitWithdraw() {
+    const errDiv = document.getElementById('wd-error');
+    const loadingDiv = document.getElementById('wd-loading');
+    const btn = document.getElementById('wd-submit-btn');
+    errDiv.classList.add('hidden');
+    const amount = parseFloat(document.getElementById('wd-amount').value) || 0;
+    const currency = document.getElementById('wd-currency').value;
+    const address = document.getElementById('wd-address').value.trim();
+    const maxBalance = {{ user.balance or 0 }};
+    if (amount <= 0) { errDiv.textContent = 'Enter a valid amount'; errDiv.classList.remove('hidden'); return; }
+    if (amount > maxBalance) { errDiv.textContent = 'Insufficient balance'; errDiv.classList.remove('hidden'); return; }
+    if (!address) { errDiv.textContent = 'Enter your wallet address'; errDiv.classList.remove('hidden'); return; }
+    const fd = new FormData();
+    fd.append('amount', amount);
+    fd.append('currency', currency);
+    fd.append('wallet_address', address);
+    const receipt = document.getElementById('wd-receipt').files[0];
+    if (receipt) fd.append('receipt', receipt);
+    loadingDiv.classList.remove('hidden');
+    btn.disabled = true;
+    fetch('/api/user/withdraw', {method:'POST', body:fd})
+        .then(r => { if (!r.ok) return r.json().then(d => { throw d; }); return r.json(); })
+        .then(d => {
+            document.getElementById('withdraw-form').classList.add('hidden');
+            document.getElementById('wd-success').classList.remove('hidden');
+            document.getElementById('wd-success-id').textContent = 'Withdrawal #' + d.id;
+            document.getElementById('wd-success-amount').textContent = '$' + amount.toLocaleString();
+            showToast('Withdrawal #' + d.id + ' submitted for $' + amount.toLocaleString(), 'success');
+        })
+        .catch(e => {
+            errDiv.textContent = e.error || 'Submission failed';
+            errDiv.classList.remove('hidden');
+            showToast(e.error || 'Withdrawal failed', 'error');
+        })
+        .finally(() => {
+            loadingDiv.classList.add('hidden');
+            btn.disabled = false;
+        });
+}
+</script>
+{% endblock %}

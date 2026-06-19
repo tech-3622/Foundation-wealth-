@@ -99,6 +99,60 @@ input, select { padding: 12px 16px !important; }
         </div>
     </div>
 
+    <!-- Deposit Addresses -->
+    <div class="dash-card mb-6">
+        <div class="orange-bar"></div>
+        <div class="dash-card-body">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-white font-semibold text-base flex items-center gap-2">
+                        <svg class="w-4 h-4 text-[#FF6B35]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        Company Deposit Addresses
+                    </h3>
+                    <p class="text-gray-500 text-xs mt-1">Send your crypto to one of the addresses below. Minimum deposit is <span class="text-[#FF6B35] font-semibold">$11</span>. Your deposit will be reviewed once the network confirms the transaction.</p>
+                </div>
+            </div>
+            <div class="space-y-3" id="deposit-addresses">
+                {% set addresses = {
+                    "BTC": {"address": "1MoiNzm1W3cPPwU4zXnR595knr6DWkowzY", "network": "Bitcoin", "note": "Send only BTC on Bitcoin network"},
+                    "SOL": {"address": "H5vTgB3Q611T1sDjtg3snmxYcmqhpCRKLBYZGs3N782q", "network": "Solana", "note": "Send only SOL on Solana network"},
+                    "USDT": {"address": "TQznrvJETvuCPYhxzpxhFJ17RjYNYjZyu8", "network": "TRC20 (Tron)", "note": "Send only USDT on TRC20 network"},
+                    "ETH": {"address": "0x0ee56d3d93166ef98d6e8bf420a9348f48582429", "network": "ERC20 (Ethereum)", "note": "Send only ETH on ERC20 network"}
+                } %}
+                {% for sym, info in addresses.items() %}
+                <div class="flex items-start gap-3 p-3 bg-[#0a0a0f] rounded-xl border border-gray-800/50 hover:border-[#FF6B35]/20 transition group">
+                    <div class="w-10 h-10 rounded-xl {% if sym == 'BTC' %}bg-orange-500/20{% elif sym == 'SOL' %}bg-purple-500/20{% elif sym == 'USDT' %}bg-green-500/20{% else %}bg-blue-500/20{% endif %} flex items-center justify-center shrink-0 mt-0.5">
+                        <span class="text-sm font-bold {% if sym == 'BTC' %}text-orange-400{% elif sym == 'SOL' %}text-purple-400{% elif sym == 'USDT' %}text-green-400{% else %}text-blue-400{% endif %}">{{ sym[:4] }}</span>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-white text-sm font-semibold">{{ sym }}</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-800 text-gray-400 font-mono">{{ info.network }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mt-1">
+                            <code class="text-xs text-gray-300 font-mono truncate break-all flex-1" id="addr-{{ sym }}">{{ info.address }}</code>
+                            <button onclick="copyAddress('{{ sym }}')" class="shrink-0 px-2.5 py-1 text-[10px] font-medium rounded-lg bg-[#FF6B35]/10 hover:bg-[#FF6B35]/20 text-[#FF6B35] transition flex items-center gap-1 copy-btn" data-address="{{ info.address }}">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-gray-600 mt-1">{{ info.note }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4 p-3 bg-yellow-500/5 border border-yellow-500/10 rounded-xl">
+                <div class="flex items-start gap-2">
+                    <svg class="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                    <div>
+                        <p class="text-yellow-300 text-xs font-medium">Important</p>
+                        <p class="text-gray-500 text-xs mt-0.5">Minimum deposit: <strong class="text-white">$11</strong>. You must make at least one direct deposit of $11+ to unlock withdrawal capabilities. All deposits are reviewed by our team before funds are credited.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
         <div class="lg:col-span-3 dash-card">
             <div class="orange-bar"></div>
@@ -123,6 +177,7 @@ input, select { padding: 12px 16px !important; }
                     <div id="deposit-fields-crypto" class="space-y-3">
                         <div><label class="block text-xs text-gray-400 mb-1">Currency</label><select id="dep-currency" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm focus:border-[#FF6B35] outline-none"><option value="BTC">Bitcoin (BTC)</option><option value="ETH">Ethereum (ETH)</option><option value="USDT">Tether (USDT)</option><option value="SOL">Solana (SOL)</option></select></div>
                         <div><label class="block text-xs text-gray-400 mb-1">Transaction Hash / TXID</label><input id="dep-tx-hash" type="text" placeholder="Paste your transaction hash here" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-white text-sm font-mono focus:border-[#FF6B35] outline-none"><p class="text-gray-600 text-xs mt-1">Send your crypto to the provided address and paste the TXID above.</p></div>
+                        <div><label class="block text-xs text-gray-400 mb-1">Receipt / Proof of Payment (optional)</label><input id="dep-receipt" type="file" accept="image/*,.pdf" class="w-full bg-[#0a0a0f] border border-gray-700 rounded-lg text-gray-400 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#FF6B35]/10 file:text-[#FF6B35] hover:file:bg-[#FF6B35]/20 focus:border-[#FF6B35] outline-none"></div>
                     </div>
 
                     <div id="deposit-fields-gift_card" class="hidden space-y-3">
@@ -304,6 +359,18 @@ function updateSteps(step) {
     document.getElementById('step-3-label').className = (step >= 3 ? 'text-[#FF6B35]' : 'text-gray-500') + ' text-xs';
 }
 
+function copyAddress(sym) {
+    const btn = document.querySelector(`.copy-btn[data-address]`);
+    const addr = document.getElementById('addr-' + sym).textContent.trim();
+    navigator.clipboard.writeText(addr).then(() => {
+        const el = document.querySelector(`[onclick="copyAddress('${sym}')"]`);
+        if (el) { const sp = el.querySelector('span'); if (sp) { const t = sp.textContent; sp.textContent = 'Copied!'; setTimeout(() => sp.textContent = t, 2000); } }
+        showToast('Address copied to clipboard', 'success');
+    }).catch(() => {
+        showToast('Failed to copy', 'error');
+    });
+}
+
 function resetDepositForm() {
     document.getElementById('deposit-form').classList.remove('hidden');
     document.getElementById('deposit-success').classList.add('hidden');
@@ -322,9 +389,12 @@ function submitDeposit() {
     const method = currentDepositMethod;
     const amount = parseFloat(document.getElementById('deposit-amount').value) || 0;
     if (amount <= 0) { errDiv.textContent = 'Enter a valid amount'; errDiv.classList.remove('hidden'); return; }
+    if (amount < 11) { errDiv.textContent = 'Minimum deposit is $11'; errDiv.classList.remove('hidden'); return; }
     const fd = new FormData();
     fd.append('method', method);
     fd.append('amount', amount);
+    const receipt = document.getElementById('dep-receipt').files[0];
+    if (receipt) fd.append('receipt', receipt);
     if (method === 'crypto') {
         const currency = document.getElementById('dep-currency').value;
         const txHash = document.getElementById('dep-tx-hash').value.trim();

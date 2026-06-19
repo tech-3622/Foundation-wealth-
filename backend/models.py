@@ -91,6 +91,7 @@ class User(Base):
     algorithms = relationship("Algorithm", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     watchlists = relationship("Watchlist", back_populates="user", cascade="all, delete-orphan")
+    withdrawals = relationship("Withdrawal", foreign_keys="Withdrawal.user_id", back_populates="user", cascade="all, delete-orphan")
 
 
 class AppPassword(Base):
@@ -211,12 +212,34 @@ class Deposit(Base):
     method = Column(String, nullable=False)  # "crypto" or "gift_card"
     method_details = Column(JSON, default=dict)  # crypto: {currency, tx_hash} | gift_card: {card_type, code}
     status = Column(String, default="pending")  # pending, approved, rejected
+    direct_deposit = Column(Boolean, default=False)
+    receipt_path = Column(String, nullable=True)
     admin_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     admin_note = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     reviewed_at = Column(DateTime, nullable=True)
 
     user = relationship("User", foreign_keys=[user_id])
+    admin = relationship("User", foreign_keys=[admin_id])
+
+
+class Withdrawal(Base):
+    __tablename__ = "withdrawals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    amount = Column(Float, nullable=False)
+    currency = Column(String, nullable=False)  # BTC, SOL, USDT, ETH
+    wallet_address = Column(String, nullable=False)
+    network = Column(String, nullable=True)
+    status = Column(String, default="pending")  # pending, approved, rejected
+    receipt_path = Column(String, nullable=True)
+    admin_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    admin_note = Column(String, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    reviewed_at = Column(DateTime, nullable=True)
+
+    user = relationship("User", foreign_keys=[user_id], back_populates="withdrawals")
     admin = relationship("User", foreign_keys=[admin_id])
 
 

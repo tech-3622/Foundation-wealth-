@@ -32,6 +32,32 @@ def init_db():
             conn.execute(_sql_text("ALTER TABLE users ADD COLUMN profile_photo_path VARCHAR"))
         if 'notification_prefs' not in cols:
             conn.execute(_sql_text("ALTER TABLE users ADD COLUMN notification_prefs TEXT DEFAULT '{}'"))
+
+        dep_cols = [row[1] for row in conn.execute(_sql_text("PRAGMA table_info(deposits)")).fetchall()]
+        if 'direct_deposit' not in dep_cols:
+            conn.execute(_sql_text("ALTER TABLE deposits ADD COLUMN direct_deposit BOOLEAN DEFAULT 0"))
+        if 'receipt_path' not in dep_cols:
+            conn.execute(_sql_text("ALTER TABLE deposits ADD COLUMN receipt_path VARCHAR"))
+        table_names = [row[0] for row in conn.execute(_sql_text("SELECT name FROM sqlite_master WHERE type='table'")).fetchall()]
+        if 'withdrawals' not in table_names:
+            conn.execute(_sql_text("""
+                CREATE TABLE IF NOT EXISTS withdrawals (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    amount FLOAT NOT NULL,
+                    currency VARCHAR NOT NULL,
+                    wallet_address VARCHAR NOT NULL,
+                    network VARCHAR,
+                    status VARCHAR DEFAULT 'pending',
+                    receipt_path VARCHAR,
+                    admin_id INTEGER,
+                    admin_note VARCHAR,
+                    created_at TIMESTAMP,
+                    reviewed_at TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id),
+                    FOREIGN KEY (admin_id) REFERENCES users(id)
+                )
+            """))
         conn.commit()
     except Exception:
         pass

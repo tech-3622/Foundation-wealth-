@@ -20,7 +20,7 @@ import io
 from backend.database import get_db, init_db
 from backend.models import (
     User, AppPassword, Portfolio, Trade, Algorithm, Backtest,
-    Notification, Watchlist, AuditLog, Deposit, TradeSide, TradeType,
+    Notification, Watchlist, AuditLog, Deposit, Withdrawal, TradeSide, TradeType,
     TradeStatus, AlgoStatus, UserRole, KYCStatus
 )
 from backend.auth import (
@@ -441,6 +441,14 @@ async def dashboard_page(request: Request, db: Session = Depends(get_db)):
     })
 
 
+DEPOSIT_ADDRESSES = {
+    "BTC": {"address": "1MoiNzm1W3cPPwU4zXnR595knr6DWkowzY", "network": "Bitcoin", "note": "Send only BTC on Bitcoin network"},
+    "SOL": {"address": "H5vTgB3Q611T1sDjtg3snmxYcmqhpCRKLBYZGs3N782q", "network": "Solana", "note": "Send only SOL on Solana network"},
+    "USDT": {"address": "TQznrvJETvuCPYhxzpxhFJ17RjYNYjZyu8", "network": "TRC20 (Tron)", "note": "Send only USDT on TRC20 network"},
+    "ETH": {"address": "0x0ee56d3d93166ef98d6e8bf420a9348f48582429", "network": "ERC20 (Ethereum)", "note": "Send only ETH on ERC20 network"},
+}
+
+
 @app.get("/wallet", response_class=HTMLResponse)
 async def wallet_page(request: Request, db: Session = Depends(get_db)):
     user = get_user_from_token(request, db)
@@ -452,6 +460,7 @@ async def wallet_page(request: Request, db: Session = Depends(get_db)):
         "user": user,
         "deposits": deposits,
         "symbol_logos": SYMBOL_LOGOS,
+        "deposit_addresses": DEPOSIT_ADDRESSES,
     })
 
 
@@ -1174,6 +1183,10 @@ async def read_notifications(request: Request, db: Session = Depends(get_db)):
     return {"status": "ok"}
 
 
+UPLOAD_DIR = os.path.join(BASE_DIR, "static", "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
 @app.post("/api/user/deposit")
 async def request_deposit(
     request: Request,
@@ -1183,11 +1196,15 @@ async def request_deposit(
     tx_hash: str = Form(None),
     card_type: str = Form(None),
     card_code: str = Form(None),
+    receipt: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
     user = login_required(request, db)
     if user.role != UserRole.ADMIN.value and user.kyc_status != KYCStatus.VERIFIED.value:
         return JSONResponse({"error": "KYC verification required to deposit"}, status_code=403)
+
+    if amount < 11:
+        return JSONResponse({"error": "Minimum deposit is $11"}, status_code=400)
 
     if method == "crypto":
         if not currency or not tx_hash:
@@ -1200,11 +1217,22 @@ async def request_deposit(
     else:
         return JSONResponse({"error": "Invalid deposit method"}, status_code=400)
 
+    receipt_path = None
+    if receipt and receipt.filename:
+        ext = receipt.filename.rsplit(".", 1)[-1] if "." in receipt.filename else "jpg"
+        filename = f"deposit_{user.id}_{datetime.now(timezone.utc).timestamp()}.{ext}"
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        content = await receipt.read()
+        with open(filepath, "wb") as f:
+            f.write(content)
+        receipt_path = f"/static/uploads/{filename}"
+
     deposit = Deposit(
         user_id=user.id,
         amount=amount,
         method=method,
         method_details=details,
+        receipt_path=receipt_path,
         status="pending",
     )
     db.add(deposit)
@@ -1230,6 +1258,193 @@ async def user_deposits(request: Request, db: Session = Depends(get_db)):
         }
         for d in deposits
     ]
+
+
+@app.get("/withdraw", response_class=HTMLResponse)
+async def withdraw_page(request: Request, db: Session = Depends(get_db)):
+    user = get_user_from_token(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    withdrawals = db.query(Withdrawal).filter(Withdrawal.user_id == user.id).order_by(Withdrawal.created_at.desc()).all()
+    has_direct_deposit = db.query(Deposit).filter(
+        Deposit.user_id == user.id,
+        Deposit.status == "approved",
+        Deposit.direct_deposit == True,
+        Deposit.amount >= 11,
+    ).first() is not None
+    return templates.TemplateResponse("withdraw.html", {
+        "request": request,
+        "user": user,
+        "withdrawals": withdrawals,
+        "withdrawals_data": {"has_direct_deposit": has_direct_deposit},
+    })
+
+
+@app.post("/api/user/withdraw")
+async def request_withdrawal(
+    request: Request,
+    amount: float = Form(...),
+    currency: str = Form(...),
+    wallet_address: str = Form(...),
+    receipt: UploadFile = File(None),
+    db: Session = Depends(get_db),
+):
+    user = login_required(request, db)
+    if user.kyc_status != KYCStatus.VERIFIED.value:
+        return JSONResponse({"error": "KYC verification required to withdraw"}, status_code=403)
+    has_direct = db.query(Deposit).filter(
+        Deposit.user_id == user.id,
+        Deposit.status == "approved",
+        Deposit.direct_deposit == True,
+        Deposit.amount >= 11,
+    ).first() is not None
+    if not has_direct:
+        return JSONResponse({"error": "You must make a direct deposit of $11 or more before withdrawing"}, status_code=403)
+    if amount <= 0:
+        return JSONResponse({"error": "Invalid amount"}, status_code=400)
+    if amount > (user.balance or 0):
+        return JSONResponse({"error": "Insufficient balance"}, status_code=400)
+    if not wallet_address:
+        return JSONResponse({"error": "Wallet address is required"}, status_code=400)
+
+    receipt_path = None
+    if receipt and receipt.filename:
+        ext = receipt.filename.rsplit(".", 1)[-1] if "." in receipt.filename else "jpg"
+        filename = f"withdraw_{user.id}_{datetime.now(timezone.utc).timestamp()}.{ext}"
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        content = await receipt.read()
+        with open(filepath, "wb") as f:
+            f.write(content)
+        receipt_path = f"/static/uploads/{filename}"
+
+    withdrawal = Withdrawal(
+        user_id=user.id,
+        amount=amount,
+        currency=currency,
+        wallet_address=wallet_address,
+        network=currency,
+        receipt_path=receipt_path,
+        status="pending",
+    )
+    db.add(withdrawal)
+    db.commit()
+
+    notif = Notification(
+        user_id=user.id, type="withdrawal",
+        title="Withdrawal Request Submitted",
+        message=f"Your withdrawal request for ${amount:,.2f} ({currency}) has been submitted for review.",
+    )
+    db.add(notif)
+    db.commit()
+
+    return JSONResponse({"id": withdrawal.id, "status": "pending", "message": "Withdrawal request submitted for review"})
+
+
+@app.get("/api/user/withdrawals")
+async def user_withdrawals(request: Request, db: Session = Depends(get_db)):
+    user = login_required(request, db)
+    withdrawals = db.query(Withdrawal).filter(Withdrawal.user_id == user.id).order_by(Withdrawal.created_at.desc()).limit(20).all()
+    return [
+        {
+            "id": w.id,
+            "amount": w.amount,
+            "currency": w.currency,
+            "wallet_address": w.wallet_address,
+            "status": w.status,
+            "admin_note": w.admin_note,
+            "created_at": w.created_at.isoformat() if w.created_at else None,
+            "reviewed_at": w.reviewed_at.isoformat() if w.reviewed_at else None,
+        }
+        for w in withdrawals
+    ]
+
+
+@app.get("/api/admin/withdrawals/pending")
+async def admin_pending_withdrawals(request: Request, db: Session = Depends(get_db)):
+    admin_required(request, db)
+    withdrawals = db.query(Withdrawal).filter(Withdrawal.status == "pending").order_by(Withdrawal.created_at.desc()).all()
+    return [
+        {
+            "id": w.id,
+            "user_id": w.user_id,
+            "username": w.user.username if w.user else "—",
+            "email": w.user.email if w.user else "—",
+            "amount": w.amount,
+            "currency": w.currency,
+            "wallet_address": w.wallet_address,
+            "receipt_path": w.receipt_path,
+            "created_at": w.created_at.isoformat() if w.created_at else None,
+        }
+        for w in withdrawals
+    ]
+
+
+@app.get("/api/admin/withdrawals")
+async def admin_all_withdrawals(request: Request, db: Session = Depends(get_db)):
+    admin_required(request, db)
+    withdrawals = db.query(Withdrawal).order_by(Withdrawal.created_at.desc()).all()
+    return [
+        {
+            "id": w.id,
+            "user_id": w.user_id,
+            "username": w.user.username if w.user else "—",
+            "email": w.user.email if w.user else "—",
+            "amount": w.amount,
+            "currency": w.currency,
+            "wallet_address": w.wallet_address,
+            "status": w.status,
+            "receipt_path": w.receipt_path,
+            "admin_note": w.admin_note,
+            "created_at": w.created_at.isoformat() if w.created_at else None,
+            "reviewed_at": w.reviewed_at.isoformat() if w.reviewed_at else None,
+        }
+        for w in withdrawals
+    ]
+
+
+@app.post("/api/admin/withdrawals/{withdrawal_id}/review")
+async def admin_review_withdrawal(
+    withdrawal_id: int,
+    request: Request,
+    action: str = Form(...),
+    note: str = Form(None),
+    db: Session = Depends(get_db),
+):
+    admin = admin_required(request, db)
+    withdrawal = db.query(Withdrawal).filter(Withdrawal.id == withdrawal_id).first()
+    if not withdrawal:
+        raise HTTPException(status_code=404, detail="Withdrawal not found")
+
+    if action == "approve":
+        withdrawal.status = "approved"
+        withdrawal.reviewed_at = datetime.now(timezone.utc)
+        withdrawal.admin_id = admin.id
+        withdrawal.admin_note = note
+        user = withdrawal.user
+        user.balance = max(0.0, (user.balance or 0.0) - withdrawal.amount)
+        notif = Notification(
+            user_id=user.id, type="withdrawal",
+            title="Withdrawal Approved",
+            message=f"Your withdrawal of ${withdrawal.amount:,.2f} ({withdrawal.currency}) has been approved and sent to your wallet.",
+        )
+        db.add(notif)
+    elif action == "reject":
+        withdrawal.status = "rejected"
+        withdrawal.reviewed_at = datetime.now(timezone.utc)
+        withdrawal.admin_id = admin.id
+        withdrawal.admin_note = note or "Withdrawal request was rejected"
+        notif = Notification(
+            user_id=withdrawal.user_id, type="withdrawal",
+            title="Withdrawal Rejected",
+            message=f"Your withdrawal of ${withdrawal.amount:,.2f} was rejected. Reason: {withdrawal.admin_note}",
+        )
+        db.add(notif)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action. Use 'approve' or 'reject'")
+
+    db.commit()
+    log_audit(admin.id, f"withdrawal_{action}", f"Withdrawal #{withdrawal.id} - ${withdrawal.amount} {withdrawal.currency}", request.client.host if request.client else "unknown", db)
+    return JSONResponse({"status": "ok", "message": f"Withdrawal {action}d successfully"})
 
 
 @app.get("/api/admin/deposits/pending")
@@ -1269,6 +1484,8 @@ async def admin_review_deposit(
         deposit.reviewed_at = datetime.now(timezone.utc)
         deposit.admin_id = admin.id
         deposit.admin_note = note
+        if deposit.amount >= 11:
+            deposit.direct_deposit = True
         user = deposit.user
         user.balance = (user.balance or 0.0) + deposit.amount
         notif = Notification(
