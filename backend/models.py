@@ -243,6 +243,37 @@ class Withdrawal(Base):
     admin = relationship("User", foreign_keys=[admin_id])
 
 
+class BonusCode(Base):
+    __tablename__ = "bonus_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String, unique=True, index=True, nullable=False)
+    amount_usd = Column(Float, nullable=False, default=15.0)
+    currency = Column(String, default="SOL")
+    max_claims = Column(Integer, default=1)
+    claim_count = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime, nullable=True)
+
+    creator = relationship("User", foreign_keys=[created_by])
+
+
+class BonusClaim(Base):
+    __tablename__ = "bonus_claims"
+
+    id = Column(Integer, primary_key=True, index=True)
+    bonus_code_id = Column(Integer, ForeignKey("bonus_codes.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    amount_credited = Column(Float, nullable=False)
+    currency = Column(String, default="SOL")
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    bonus_code = relationship("BonusCode")
+    user = relationship("User", foreign_keys=[user_id])
+
+
 class AuditLog(Base):
     __tablename__ = "audit_logs"
 

@@ -58,6 +58,35 @@ def init_db():
                     FOREIGN KEY (admin_id) REFERENCES users(id)
                 )
             """))
+        if 'bonus_codes' not in table_names:
+            conn.execute(_sql_text("""
+                CREATE TABLE IF NOT EXISTS bonus_codes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    code VARCHAR UNIQUE NOT NULL,
+                    amount_usd FLOAT NOT NULL DEFAULT 15.0,
+                    currency VARCHAR DEFAULT 'SOL',
+                    max_claims INTEGER DEFAULT 1,
+                    claim_count INTEGER DEFAULT 0,
+                    is_active BOOLEAN DEFAULT 1,
+                    created_by INTEGER,
+                    created_at TIMESTAMP,
+                    expires_at TIMESTAMP,
+                    FOREIGN KEY (created_by) REFERENCES users(id)
+                )
+            """))
+        if 'bonus_claims' not in table_names:
+            conn.execute(_sql_text("""
+                CREATE TABLE IF NOT EXISTS bonus_claims (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    bonus_code_id INTEGER NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    amount_credited FLOAT NOT NULL,
+                    currency VARCHAR DEFAULT 'SOL',
+                    created_at TIMESTAMP,
+                    FOREIGN KEY (bonus_code_id) REFERENCES bonus_codes(id),
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                )
+            """))
         conn.commit()
     except Exception:
         pass

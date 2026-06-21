@@ -20,8 +20,8 @@ import io
 from backend.database import get_db, init_db
 from backend.models import (
     User, AppPassword, Portfolio, Trade, Algorithm, Backtest,
-    Notification, Watchlist, AuditLog, Deposit, Withdrawal, TradeSide, TradeType,
-    TradeStatus, AlgoStatus, UserRole, KYCStatus
+    Notification, Watchlist, AuditLog, Deposit, Withdrawal, BonusCode, BonusClaim,
+    TradeSide, TradeType, TradeStatus, AlgoStatus, UserRole, KYCStatus
 )
 from backend.auth import (
     hash_password, verify_password, create_access_token,
@@ -1445,6 +1445,148 @@ async def admin_review_withdrawal(
     db.commit()
     log_audit(admin.id, f"withdrawal_{action}", f"Withdrawal #{withdrawal.id} - ${withdrawal.amount} {withdrawal.currency}", request.client.host if request.client else "unknown", db)
     return JSONResponse({"status": "ok", "message": f"Withdrawal {action}d successfully"})
+
+
+import random
+import string
+
+
+def generate_bonus_code(length=10):
+    chars = string.ascii_uppercase + string.digits
+    return "BONUS-" + "".join(random.choices(chars, k=length))
+
+
+@app.post("/api/user/claim-bonus")
+async def claim_bonus(
+    request: Request,
+    code: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    user = login_required(request, db)
+    code = code.strip().upper()
+
+    bonus = db.query(BonusCode).filter(BonusCode.code == code).first()
+    if not bonus:
+        return JSONResponse({"error": "Invalid bonus code"}, status_code=404)
+    if not bonus.is_active:
+        return JSONResponse({"error": "This bonus code has been deactivated"}, status_code=400)
+    if bonus.expires_at and bonus.expires_at < datetime.now(timezone.utc):
+        return JSONResponse({"error": "This bonus code has expired"}, status_code=400)
+    if bonus.claim_count >= bonus.max_claims:
+        return JSONResponse({"error": "This bonus code has reached its maximum claims"}, status_code=400)
+
+    already_claimed = db.query(BonusClaim).filter(
+        BonusClaim.bonus_code_id == bonus.id,
+        BonusClaim.user_id == user.id,
+    ).first()
+    if already_claimed:
+        return JSONResponse({"error": "You have already claimed this bonus code"}, status_code=400)
+
+    bonus.claim_count += 1
+    user.balance = (user.balance or 0.0) + bonus.amount_usd
+
+    claim = BonusClaim(
+        bonus_code_id=bonus.id,
+        user_id=user.id,
+        amount_credited=bonus.amount_usd,
+        currency=bonus.currency,
+    )
+    db.add(claim)
+
+    notif = Notification(
+        user_id=user.id, type="bonus",
+        title=f"${bonus.amount_usd} {bonus.currency} Bonus Claimed!",
+        message=f"You claimed code '{bonus.code}' and received ${bonus.amount_usd:,.2f} credited to your balance.",
+    )
+    db.add(notif)
+    db.commit()
+
+    return JSONResponse({
+        "status": "ok",
+        "message": f"You received ${bonus.amount_usd:,.2f} {bonus.currency} bonus!",
+        "amount": bonus.amount_usd,
+        "currency": bonus.currency,
+        "new_balance": user.balance,
+    })
+
+
+@app.get("/api/user/bonus-history")
+async def user_bonus_history(request: Request, db: Session = Depends(get_db)):
+    user = login_required(request, db)
+    claims = db.query(BonusClaim).filter(BonusClaim.user_id == user.id).order_by(BonusClaim.created_at.desc()).limit(20).all()
+    return [
+        {
+            "id": c.id,
+            "amount": c.amount_credited,
+            "currency": c.currency,
+            "code": c.bonus_code.code if c.bonus_code else "—",
+            "created_at": c.created_at.isoformat() if c.created_at else None,
+        }
+        for c in claims
+    ]
+
+
+@app.post("/api/admin/bonus-codes/generate")
+async def admin_generate_bonus(
+    request: Request,
+    amount: float = Form(15.0),
+    count: int = Form(1),
+    max_claims: int = Form(1),
+    db: Session = Depends(get_db),
+):
+    admin = admin_required(request, db)
+    codes = []
+    for _ in range(count):
+        bonus_code_str = generate_bonus_code()
+        bonus = BonusCode(
+            code=bonus_code_str,
+            amount_usd=amount,
+            currency="SOL",
+            max_claims=max_claims,
+            is_active=True,
+            created_by=admin.id,
+        )
+        db.add(bonus)
+        codes.append(bonus_code_str)
+    db.commit()
+    log_audit(admin.id, f"bonus_generate", f"Generated {count} bonus codes @ ${amount} each", request.client.host if request.client else "unknown", db)
+    return JSONResponse({"status": "ok", "codes": codes, "count": count, "amount": amount})
+
+
+@app.get("/api/admin/bonus-codes")
+async def admin_list_bonus_codes(request: Request, db: Session = Depends(get_db)):
+    admin_required(request, db)
+    codes = db.query(BonusCode).order_by(BonusCode.created_at.desc()).limit(100).all()
+    return [
+        {
+            "id": c.id,
+            "code": c.code,
+            "amount_usd": c.amount_usd,
+            "currency": c.currency,
+            "max_claims": c.max_claims,
+            "claim_count": c.claim_count,
+            "is_active": c.is_active,
+            "created_at": c.created_at.isoformat() if c.created_at else None,
+            "expires_at": c.expires_at.isoformat() if c.expires_at else None,
+        }
+        for c in codes
+    ]
+
+
+@app.post("/api/admin/bonus-codes/{code_id}/toggle")
+async def admin_toggle_bonus_code(
+    code_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    admin = admin_required(request, db)
+    bonus = db.query(BonusCode).filter(BonusCode.id == code_id).first()
+    if not bonus:
+        raise HTTPException(status_code=404, detail="Bonus code not found")
+    bonus.is_active = not bonus.is_active
+    db.commit()
+    log_audit(admin.id, f"bonus_toggle", f"{'Activated' if bonus.is_active else 'Deactivated'} bonus code #{bonus.code}", request.client.host if request.client else "unknown", db)
+    return JSONResponse({"status": "ok", "is_active": bonus.is_active})
 
 
 @app.get("/api/admin/deposits/pending")
